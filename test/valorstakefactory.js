@@ -10,7 +10,7 @@ var BigNumber      = util.BigNumber;
 
 const day = 86400; 
 
-const ValorToken = artifacts.require('./ValorToken.sol');
+const ValorTokenMockup = artifacts.require('./mocks/ValorTokenMockup.sol');
 const ValorTimelock = artifacts.require("./ValorTimelock.sol");
 const ValorStakeFactory = artifacts.require("./ValorStakeFactory.sol");
 
@@ -23,7 +23,7 @@ contract('ValorStakeFactory', async ([companyWallet,someUser,anotherUser]) => {
 
     beforeEach(async () => {
      //lets build a VALOR token with all funds allocated to companyWallet
-     this.token       = await ValorToken.new(companyWallet, companyWallet, companyWallet);
+     this.token       = await ValorTokenMockup.new(companyWallet, companyWallet, companyWallet);
      this.factory     = await ValorStakeFactory.new(this.token.address);
 
      //lets give some tokens to someUser
