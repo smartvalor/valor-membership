@@ -4,9 +4,9 @@
 var util = require ("./util.js");
 var BigNumber      = util.BigNumber;
 
-const day = 86400; 
+const day = 86400;
 
-const ValorToken = artifacts.require('./ValorToken.sol');
+const ValorToken = artifacts.require('./ValorTokenMockup.sol');
 const ValorTimelock = artifacts.require("./ValorTimelock.sol");
 
 const VALOR = 1e18;
@@ -20,7 +20,7 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
      //lets build a VALOR token with all funds allocated to companyWallet
      this.token       = await ValorToken.new(companyWallet, companyWallet, companyWallet);
 
-     this.deployTime  = await util.latestTime(); 
+     this.deployTime  = await util.latestTime();
 
      //a timelock of 12 months
      this.timelock    = await ValorTimelock.new(this.token.address, someUser, companyWallet, 365 * day);
@@ -41,7 +41,7 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
      console.log((this.releaseTime.toNumber() - this.deployTime) + " seconds");
      console.log((this.releaseTime.toNumber() - this.deployTime)/86400 + " days");
 
-     
+
      (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(holdings);
      (await this.timelock.beneficiary.call()).should.be.equal(someUser);
      (await this.timelock.owner.call()).should.be.equal(companyWallet);
