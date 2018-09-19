@@ -1,8 +1,30 @@
+
+//Simple example to show how to interact server side with the Stake Factory
+//and to watch the StakeCreated events
+//author: Davide Carboni
+//copyright of Smart Valor AG 2018
+
+
+//load web3js lib
 var Web3 = require('web3');
-var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
+
+//instantiate web3
+web3 = new Web3();
 
 
-//put up to date ABI here
+console.log("ensure you're running a web3 V1.0.0 provider on port 9545");
+//set a websocket protocol to watch events
+const eventProvider = new Web3
+                      .providers
+                      .WebsocketProvider('ws://localhost:9545');
+
+
+web3.setProvider(eventProvider)
+
+
+
+
+//put your actual factory ABI here
 var ABI= [
     {
       "constant": false,
@@ -116,10 +138,6 @@ var ABI= [
       "constant": false,
       "inputs": [
         {
-          "name": "beneficiary",
-          "type": "address"
-        },
-        {
           "name": "lockPeriod",
           "type": "uint256"
         },
@@ -133,8 +151,32 @@ var ABI= [
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "beneficiary",
+          "type": "address"
+        },
+        {
+          "name": "lockPeriod",
+          "type": "uint256"
+        },
+        {
+          "name": "atStake",
+          "type": "uint256"
+        }
+      ],
+      "name": "createStakeOnBehalf",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
-  ];
+  ]
+
+//put a ERC20 ABI here
 var ERC20=[
     {
       "constant": true,
@@ -312,7 +354,7 @@ var ERC20=[
   ]
 
 //put actual factory address here
-var factoryAddr="0xac81b82175465b5e24259c521842db029866bebc";
+var factoryAddr="0xbc0b97a6cc5906ec3a9da6ab14f3d2244041dbab";
 
 
 async function main(){
@@ -325,43 +367,50 @@ async function main(){
 
 	//retrieve factory
 	let factory =  new web3.eth.Contract(ABI, factoryAddr);
-	console.log(factory.options.address);
+	console.log("factory:"+factory.options.address);
 
 	//retrieve token
-	let tokenAddr = await factory.methods.token().call();
+	let tokenAddr = await factory.methods.token()
+	.call();
 	//console.log(tokenAddr);
 
 	let token = new web3.eth.Contract(ERC20, tokenAddr);
-	console.log(token.options.address);
+	console.log("token:"+token.options.address);
 
 
 
 	//make sure company has tokens 
-	let balance = await token.methods.balanceOf(company).call();
-	console.log(balance);
+	let balance = await token.methods.balanceOf(company)
+	.call();
+	console.log("balance of company account:"+balance);
 
-	//company approves 1000 token units to factory
-	let rcpt = await token.methods.approve(factoryAddr, 1000).send({from:company});
-	if(rcpt.status == true) {
-		console.log("transaction accepted");
-	}
-	else{
-		console.log("transaction rejected");
-		return;
-	}
+	//company approves 1000 token units to factory 
+	let rcpt = await token.methods.approve(factoryAddr, 1000)
+	.send({from:company});
+
+
+	//verify the allowance is granted
+	let allowance = await token.methods.allowance(company, factoryAddr).call({from:company});
+	console.log("allowance:"+allowance);	
 	
-	
-	//company create stake with 1d expire time of 1000 token units
-	rcpt = await factory.methods.createStake(beneficiary, 86400, 1000).send({from:company});
-	if(rcpt.status == true) {
-		console.log("transaction accepted");
-	}
-	else{
-		console.log("transaction rejected");
-		return;
-	}
 
 
+
+
+    //watch StakeCreated events
+    factory
+    .events
+    .StakeCreated({},
+    			  function(err,evt){
+    			  	//replace this code with actual event callback code
+    			  	console.log("err:"+err);
+    			  	console.log("event", evt);
+    });
+
+
+	//company create on behalf of beneficiary stake with 10d expire time of 1000 token units
+	await factory.methods.createStakeOnBehalf(beneficiary, 86400 * 10, 1000)
+	.send({from:company, gas: 500000});
 
 
 }

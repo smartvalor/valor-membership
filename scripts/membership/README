@@ -1,0 +1,22 @@
+--------
+INSTALL
+--------
+launch
+
+npm install 
+
+in this directory
+
+
+---------
+PREPARE
+---------
+
+launch ganache on port 9545
+
+
+
+---
+RUN
+---
+node createStake.js

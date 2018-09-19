@@ -23,10 +23,22 @@ contract ValorStakeFactory is Ownable{
 
     //creates a stake and tries to transfer the required amount atStake
     //if transferFrom fails the transaction fails and gas is burnt
-    function createStake(address beneficiary, uint256 lockPeriod, uint256 atStake) 
+    function createStake(uint256 lockPeriod, uint256 atStake) 
     public {
-        ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
-        token.transferFrom(beneficiary, address(stake), atStake);
+
+        ValorTimelock stake = new ValorTimelock(token, msg.sender, owner, lockPeriod);
+        token.transferFrom(msg.sender, address(stake), atStake);
         emit StakeCreated(address(stake), atStake);
     }
+
+    //creates a stake and tries to transfer from another fund the required amount atStake
+    //if transferFrom fails the transaction fails and gas is burnt
+    function createStakeOnBehalf(address beneficiary, uint256 lockPeriod, uint256 atStake) 
+    public {        
+        ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
+        token.transferFrom(msg.sender, address(stake), atStake);
+        emit StakeCreated(address(stake), atStake);
+    }
+
+
 }
