@@ -18,16 +18,16 @@ const VALOR = 1e18;
 const holdings = 10000 * VALOR;
 
 
-contract('ValorStakeFactory', async ([companyWallet,someUser,anotherUser]) => {
+contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUser]) => {
 
 
     beforeEach(async () => {
      //lets build a VALOR token with all funds allocated to companyWallet
      this.token       = await ValorTokenMockup.new(companyWallet, companyWallet, companyWallet);
-     this.factory     = await ValorStakeFactory.new(this.token.address);
+     this.factory     = await ValorStakeFactory.new(this.token.address, companyWallet);
 
      //lets give some tokens to someUser
-     await this.token.transfer.sendTransaction(someUser, 10000 *VALOR);
+     await this.token.transfer.sendTransaction(someUser, 10000 *VALOR, {from: companyWallet});
     });
 
     it("check factory is built with proper parameters", async () => {
@@ -36,6 +36,13 @@ contract('ValorStakeFactory', async ([companyWallet,someUser,anotherUser]) => {
      (await this.factory.owner.call()).should.be.equal(companyWallet);
 
     });
+
+    it("change factory ownership from companyWallet to anotherUser", async () => {
+        await this.factory.transferOwnership(anotherUser,{from:companyWallet}).should.be.fulfilled;
+        (await this.factory.owner.call()).should.be.equal(anotherUser);
+
+    });
+
 
 
     it("BD-57 Fix -- companyWallet manages funds on behalf of someUser and creates a stake for him", async () => {

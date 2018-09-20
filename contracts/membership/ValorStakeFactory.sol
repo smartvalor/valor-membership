@@ -7,6 +7,8 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 /**
  * @title ValorStakeFactory
  * @dev ValorStakeFactory creates ValorTimelock objects on demand
+ * the ownership of factory is assigned to companyWallet and it can be 
+ * different from deployer msg.sender
  */
 contract ValorStakeFactory is Ownable{
 
@@ -14,9 +16,12 @@ contract ValorStakeFactory is Ownable{
 
     event StakeCreated(address stake, uint256 atStake); 
 
-    constructor(address _tokenAddress) public{
+
+    constructor(address _tokenAddress, address companyWallet) public{
+        require(_tokenAddress != address(0));
+        require(companyWallet != address(0));
     	token = ERC20(_tokenAddress);
-        owner = msg.sender;
+        owner = companyWallet;
     }
 
 
