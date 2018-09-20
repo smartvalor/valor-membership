@@ -1,7 +1,7 @@
 
-var StakeFactory = artifacts.require("./ValorStakeFactory.sol");
+const StakeFactory = artifacts.require("./ValorStakeFactory.sol");
 
 module.exports = function(deployer,network,accounts) {
-  //change the address with the actual token address
-  deployer.deploy(StakeFactory, "0x914137d8e00f7ab330e38d441a854639769ec400");
+  //change the address with the actual VALOR token address
+  deployer.deploy(StakeFactory, '0x4afe95019efd81239d0e5307493efb9ee67ded3b');
 };

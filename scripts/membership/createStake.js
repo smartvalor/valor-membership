@@ -354,7 +354,7 @@ var ERC20=[
   ]
 
 //put actual factory address here
-var factoryAddr="0xbc0b97a6cc5906ec3a9da6ab14f3d2244041dbab";
+var factoryAddr="0x90cd8e3995f4cf3fc62e107013b20b39ee7c63f7";
 
 
 async function main(){
