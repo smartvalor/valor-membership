@@ -38,16 +38,32 @@ contract('ValorStakeFactory', async ([companyWallet,someUser,anotherUser]) => {
     });
 
 
-    it("company wallet creates stakes on behalf of someUser", async () => {
+    it("BD-57 Fix -- companyWallet manages funds on behalf of someUser and creates a stake for him", async () => {
+     
+     //someUser has tokens manged by company
+     //NOTICE: it is company who is approving allowance to factory
+     await this.token.approve(this.factory.address, 5000 * VALOR, {from:companyWallet});
+         
+     //company creates stake (eg. from platform) on behalf of someUser using
+     //funds managed by company on behlaf of user
+     await this.factory.createStakeOnBehalf.sendTransaction(
+                                                    someUser,
+                                                    1 * day, 
+                                                    5000 * VALOR, 
+                                                    {from: companyWallet})
+     .should.be.fulfilled;
+
+    });
+
+    it("someUser creates a stake for himself", async () => {
 
      //someUser approves 5000 VALOR allowance to factory
      await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
          
      //company creates stake (eg. from platform) on behalf of someUser
-     let tx = await this.factory.createStake.sendTransaction(someUser,
-                                                        1 * day, 
-                                                        5000 * VALOR, 
-                                                        {from: companyWallet});
+     let tx = await this.factory.createStake.sendTransaction(   1 * day, 
+                                                                5000 * VALOR, 
+                                                                {from: someUser});
 
 
      let deployTime  = await util.latestTime(); 
@@ -87,28 +103,37 @@ contract('ValorStakeFactory', async ([companyWallet,someUser,anotherUser]) => {
     owner.should.be.equal(companyWallet);
 
 
-console.log(beneficiary);
+//console.log(beneficiary);
 
     });
 
 
     it("nobody can create a stake without tokens at stake", async () => {
-        await this.factory.createStake.sendTransaction(someUser,
-                                                        1 * day, 
+        await this.factory.createStake.sendTransaction( 1 * day, 
                                                         5000 * VALOR, 
-                                                        {from: companyWallet})
+                                                        {from: someUser})
         .should.be.rejected;
+
+
+        await this.factory.createStakeOnBehalf.sendTransaction( someUser,
+                                                                1 * day, 
+                                                                5000 * VALOR, 
+                                                                {from: companyWallet})
+        .should.be.rejected;
+
     });
 
 
-    it("everyone (eg. anotherUser) can create a stake on behalf of someUser", async () => {
+    it("Bugfix BD-58: reject anotherUser to create a stake for someUser after the latter approves funds", async () => {
         //someUser approves 5000 VALOR allowance to factory
         await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
+
+        //another user tries to create stake with arbitrary timelock
         await this.factory.createStake.sendTransaction(someUser,
-                                                        1 * day, 
+                                                        100000 * day, 
                                                         5000 * VALOR, 
                                                         {from: anotherUser})
-        .should.be.fulfilled;
+        .should.be.rejected;
     });
 
 
@@ -116,10 +141,9 @@ console.log(beneficiary);
     it("if tokens are insufficient the stake is not created", async () => {
         //someUser approves 5000 VALOR allowance to factory
         await this.token.approve(this.factory.address, 4999 * VALOR, {from:someUser});
-        await this.factory.createStake.sendTransaction(someUser,
-                                                        1 * day, 
+        await this.factory.createStake.sendTransaction( 1 * day, 
                                                         5000 * VALOR, 
-                                                        {from: anotherUser})
+                                                        {from:someUser})
         .should.be.rejected;
     });    
 
@@ -127,16 +151,14 @@ console.log(beneficiary);
         //someUser approves 5000 VALOR allowance to factory
         await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
 
-        await this.factory.createStake.sendTransaction(someUser,
-                                                        1 * day, 
+        await this.factory.createStake.sendTransaction( 1 * day, 
                                                         2000 * VALOR, 
-                                                        {from: companyWallet})
+                                                        {from: someUser})
         .should.be.fulfilled;
 
-        await this.factory.createStake.sendTransaction(someUser,
-                                                        10 * day, 
+        await this.factory.createStake.sendTransaction( 10 * day, 
                                                         3000 * VALOR, 
-                                                        {from: companyWallet})
+                                                        {from: someUser})
         .should.be.fulfilled;
 
     });

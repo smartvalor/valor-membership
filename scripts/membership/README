@@ -1,0 +1,22 @@
+--------
+INSTALL
+--------
+install web3 in this folder
+
+> npm install web3
+
+
+
+
+---------
+PREPARE
+---------
+
+launch ganache on port 9545
+
+
+
+---
+RUN
+---
+> node createStake.js
