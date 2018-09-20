@@ -3,7 +3,7 @@ INSTALL
 --------
 install web3 in this folder
 
-> npm install web3
+> npm install web3 websocket
 
 
 
