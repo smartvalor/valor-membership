@@ -27,6 +27,33 @@ contract ValorTimelock is TokenTimelock, Ownable{
 
 
     /**
+    * @notice Transfers tokens held by timelock to beneficiary.
+    */
+    function release() public {
+        //we override this to restrict to the legit beneficiary only
+        require(msg.sender == beneficiary);
+        super.release();
+    }
+
+    /**
+    * @notice Transfers some tokens held by timelock to beneficiary.
+    */
+    function partialRelease(uint256 amount) public {
+        //restrict this tx to the legit beneficiary only
+        require(msg.sender == beneficiary);
+        //check time is done
+        require(block.timestamp >= releaseTime);
+        
+        uint256 balance = token.balanceOf(this);
+        require(balance >= amount);
+
+        require(amount > 0);
+
+        token.safeTransfer(beneficiary, amount);
+    }
+
+
+    /**
      * @notice immediately Transfers tokens held by timelock to beneficiary
      * bypassing timelock
      */
