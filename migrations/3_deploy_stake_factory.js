@@ -3,5 +3,7 @@ const StakeFactory = artifacts.require("./ValorStakeFactory.sol");
 
 module.exports = function(deployer,network,accounts) {
   //change the address with the actual VALOR token address
-  deployer.deploy(StakeFactory, '0x4afe95019efd81239d0e5307493efb9ee67ded3b');
+  console.log("network:"+network);
+  if(network == "infuraRopsten")
+  	deployer.deploy(StakeFactory, '0x6e748fe8f1f344ce557bfdbf29c085aa0dff73b9', accounts[0]);
 };

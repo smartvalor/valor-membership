@@ -48,7 +48,7 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
   });
 
 
-  it("anyone fails to release before time", async () => {
+  it("anyone fails to release before due time", async () => {
     await this.timelock.release.sendTransaction({from: someUser}).should.be.rejected;
     await this.timelock.release.sendTransaction({from: companyWallet}).should.be.rejected;
   });
@@ -57,23 +57,36 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
 
 
 
-  it("legit user succeeds to get funds at time", async () => {
-
+  it("legit user succeeds to release all funds at due time", async () => {
     await util.increaseTimeTo(this.releaseTime);
     await this.timelock.release.sendTransaction({from: someUser}).should.be.fulfilled;
     (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(0);
     (await this.token.balanceOf(someUser)).should.be.bignumber.equal(holdings);
   });
 
+  it("legit user succeeds to partially release funds at due time", async () => {
+
+  });
+
+  it("only beneficiary can release (full or partially) at due time", async () => {
+    
+  });
+
+
+  it("beneficiary can extend timelock on a part of funds and release the rest", async () => {
+    
+  });
+
+  it("nobody other than beneficiary can extend timelock", async () => {
+    
+  });
 
 
 
   it("only company succeeds to release earlier with emergency pull", async () => {
-
     await this.timelock.emergencyRelease.sendTransaction({from: anotherUser}).should.be.rejected;
     await this.timelock.emergencyRelease.sendTransaction({from: someUser}).should.be.rejected;
     await this.timelock.emergencyRelease.sendTransaction({from: companyWallet}).should.be.fulfilled;
-
     (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(0);
     (await this.token.balanceOf(someUser)).should.be.bignumber.equal(holdings);
   });

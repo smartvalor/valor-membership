@@ -15,7 +15,10 @@ contract ValorStakeFactory is Ownable, Pausable, Destructible{
 
     ERC20 public token;
 
-    event StakeCreated(address stake, uint256 atStake); 
+    event StakeCreated(address stake, 
+                       address beneficiary,
+                       uint256 lockPeriod, 
+                       uint256 atStake); 
 
 
     constructor(address _tokenAddress, address companyWallet) public{
@@ -25,22 +28,27 @@ contract ValorStakeFactory is Ownable, Pausable, Destructible{
         owner = companyWallet;
     }
 
+    function _createStake(address beneficiary, uint256 lockPeriod, uint256 atStake) 
+    internal{
+        require(lockPeriod <= 365 * 86400);//being 1 day = 86400s
+        ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
+        token.transferFrom(msg.sender, address(stake), atStake);
+        emit StakeCreated(address(stake), beneficiary, lockPeriod, atStake);
+    }
 
 
     //creates a stake and tries to transfer the required amount atStake
     //if transferFrom fails the transaction fails and gas is burnt
     function createStake(uint256 lockPeriod, uint256 atStake) 
-    public {
-        createStakeOnBehalf(msg.sender, lockPeriod, atStake);
+    public whenNotPaused {
+        _createStake(msg.sender, lockPeriod, atStake);
     }
 
     //creates a stake and tries to transfer from another fund the required amount atStake
     //if transferFrom fails the transaction fails and gas is burnt
     function createStakeOnBehalf(address beneficiary, uint256 lockPeriod, uint256 atStake) 
-    public {        
-        ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
-        token.transferFrom(msg.sender, address(stake), atStake);
-        emit StakeCreated(address(stake), atStake);
+    public onlyOwner {        
+        _createStake(beneficiary, lockPeriod, atStake);
     }
 
 
