@@ -42,7 +42,7 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
     it("factory cannot be paused or dismissed by other than companyWallet", async () => {
      //console.log("test");
      await this.factory.pause.sendTransaction({from:anotherUser}).should.be.rejected;
-     await this.factory.destroy.sendTransaction({from:anotherUser}).should.be.rejected;
+     await this.factory.dismiss.sendTransaction({from:anotherUser}).should.be.rejected;
  
     });
 
@@ -62,7 +62,7 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
 
    it("dismissed factory won't accept any create stake request", async () => {
      //console.log("test");
-     await this.factory.destroy.sendTransaction({from:companyWallet}).should.be.fulfilled;
+     await this.factory.dismiss.sendTransaction({from:companyWallet}).should.be.fulfilled;
 
      //someUser preapproves 5000 VALOR allowance to factory
      await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});

@@ -4,14 +4,13 @@ import "./ValorTimelock.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
-import "openzeppelin-solidity/contracts/lifecycle/Destructible.sol";
 /**
  * @title ValorStakeFactory
  * @dev ValorStakeFactory creates ValorTimelock objects on demand
  * the ownership of factory is assigned to companyWallet and it can be 
  * different from deployer msg.sender
  */
-contract ValorStakeFactory is Ownable, Pausable, Destructible{
+contract ValorStakeFactory is Ownable, Pausable{
 
     //the token managed by this factory
     ERC20 public token;
@@ -46,6 +45,14 @@ contract ValorStakeFactory is Ownable, Pausable, Destructible{
         ValorTimelock stake = new ValorTimelock(token, msg.sender, owner, lockPeriod);
         token.transferFrom(msg.sender, address(stake), atStake);
         emit StakeCreated(address(stake), msg.sender, lockPeriod, atStake);
+    }
+
+
+    /**
+    * @dev transfers the current balance to the owner and terminates the factory.
+    */
+    function dismiss() onlyOwner public {
+        selfdestruct(owner);
     }
 
 }
