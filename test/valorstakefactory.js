@@ -179,24 +179,8 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
     });
 
 
-    it("nobody can create a stake without preapproving tokens to factory", async () => {
-        await this.factory.createStake.sendTransaction( 1 * day, 
-                                                        5000 * VALOR, 
-                                                        {from: someUser})
-        .should.be.rejected;
 
-
-        await this.factory.createStakeOnBehalf.sendTransaction( someUser,
-                                                                1 * day, 
-                                                                5000 * VALOR, 
-                                                                {from: companyWallet})
-        .should.be.rejected;
-
-    });
-
-
-
-    it("Bugfix BD-58: reject anotherUser to create a stake for someUser after the latter approves funds", async () => {
+    it("Once the user Alice preapproves tokens, user Charlie cannot create stake for Alice", async () => {
         //someUser approves 5000 VALOR allowance to factory
         await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
 
@@ -232,7 +216,7 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
     });  
 
 
-    it("an account someUser can have multiple different stakes", async () => {
+    it("A ETH account can be beneficiary of more stakes", async () => {
         //someUser approves 5000 VALOR allowance to factory
         await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
 
