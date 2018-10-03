@@ -13,14 +13,21 @@ import "openzeppelin-solidity/contracts/lifecycle/Destructible.sol";
  */
 contract ValorStakeFactory is Ownable, Pausable, Destructible{
 
+    //the token managed by this factory
     ERC20 public token;
 
+    //event to emit at each creation of a new timelock contract
     event StakeCreated(address stake, 
                        address beneficiary,
                        uint256 lockPeriod, 
                        uint256 atStake); 
 
 
+    /**
+    * @dev it creates a new instance
+    * @param _tokenAddress the address of token contract to be managed 
+    * @param companyWallet the account who owns the factory
+    */
     constructor(address _tokenAddress, address companyWallet) public{
         require(_tokenAddress != address(0));
         require(companyWallet != address(0));
@@ -28,28 +35,17 @@ contract ValorStakeFactory is Ownable, Pausable, Destructible{
         owner = companyWallet;
     }
 
-    function _createStake(address beneficiary, uint256 lockPeriod, uint256 atStake) 
-    internal{
-        require(lockPeriod <= 365 * 86400);//being 1 day = 86400s
-        ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
-        token.transferFrom(msg.sender, address(stake), atStake);
-        emit StakeCreated(address(stake), beneficiary, lockPeriod, atStake);
-    }
-
-
-    //creates a stake and tries to transfer the required amount atStake
-    //if transferFrom fails the transaction fails and gas is burnt
+    /**
+    * @dev it creates a new timelock upon request
+    * @param lockPeriod the duration of timelock in secs
+    * @param atStake the amount of tokens to be held
+    */
     function createStake(uint256 lockPeriod, uint256 atStake) 
     public whenNotPaused {
-        _createStake(msg.sender, lockPeriod, atStake);
+        require(lockPeriod <= 365 * 86400);//being 1 day = 86400s
+        ValorTimelock stake = new ValorTimelock(token, msg.sender, owner, lockPeriod);
+        token.transferFrom(msg.sender, address(stake), atStake);
+        emit StakeCreated(address(stake), msg.sender, lockPeriod, atStake);
     }
-
-    //creates a stake and tries to transfer from another fund the required amount atStake
-    //if transferFrom fails the transaction fails and gas is burnt
-    function createStakeOnBehalf(address beneficiary, uint256 lockPeriod, uint256 atStake) 
-    public onlyOwner {        
-        _createStake(beneficiary, lockPeriod, atStake);
-    }
-
 
 }

@@ -4,14 +4,14 @@
 var util = require ("./util.js");
 var BigNumber      = util.BigNumber;
 
-const day = 86400;
+
 
 const ValorToken = artifacts.require('./ValorTokenMockup.sol');
 const ValorTimelock = artifacts.require("./ValorTimelock.sol");
 
 const VALOR = 1e18;
 const holdings = 10000 * VALOR;
-
+const day = 86400;
 
 contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
 
@@ -22,7 +22,7 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
 
      this.deployTime  = await util.latestTime();
 
-     //a timelock of 12 months
+     //a timelock of 365d
      this.timelock    = await ValorTimelock.new(this.token.address, someUser, companyWallet, 365 * day);
 
      //put some tokens in the timelocked fund
@@ -30,18 +30,14 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
 
      this.releaseTime = await this.timelock.releaseTime.call();
 
-
-
   });
 
-  it("check time lock is built with proper parameters", async () => {
+  it("check timelock is built with proper parameters", async () => {
      console.log("releaseTime "+this.releaseTime.toNumber());
      console.log("deployTime " +this.deployTime);
      console.log("hold period is");
      console.log((this.releaseTime.toNumber() - this.deployTime) + " seconds");
      console.log((this.releaseTime.toNumber() - this.deployTime)/86400 + " days");
-
-
      (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(holdings);
      (await this.timelock.beneficiary.call()).should.be.equal(someUser);
      (await this.timelock.owner.call()).should.be.equal(companyWallet);
@@ -56,7 +52,7 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
   });
 
 
-  it("company can always dismiss (ie. in case of emergency, security exploit etc.) the stake", async () => {
+  it("company can release anytime (ie. in case of emergency, security exploit etc.) the stake", async () => {
     await this.timelock.emergencyRelease.sendTransaction({from: companyWallet}).should.be.fulfilled;
     (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(0);
     (await this.token.balanceOf(someUser)).should.be.bignumber.equal(holdings);
@@ -81,7 +77,6 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
   it("after release time the legit user cannot pull more funds than available", async () => {
     await util.increaseTimeTo(this.releaseTime);
     const reimbursement = (new BigNumber(holdings)).add(1);
-
     console.log("reimbursement:"+reimbursement);
     await this.timelock.partialRelease.sendTransaction(reimbursement,{from: someUser}).should.be.rejected;   
   });

@@ -18,6 +18,10 @@ contract ValorTimelock is TokenTimelock, Ownable{
 
     /**
      * @dev the duration arg is the number of seconds the fund is locked since creation
+     * @param _token the token managed by this contract
+     * @param _beneficiary the address which will receive the locked funds at due time
+     * @param _owner the owner which can activate the emergency release
+     * @param duration locking period in secs 
      */
     constructor(ERC20 _token, address _beneficiary, address _owner, uint256 duration )
     TokenTimelock(_token, _beneficiary, duration + block.timestamp)
@@ -27,7 +31,7 @@ contract ValorTimelock is TokenTimelock, Ownable{
 
 
     /**
-    * @notice Transfers tokens held by timelock to beneficiary.
+    * @dev it releases all tokens held by this contract to beneficiary.
     */
     function release() public {
         //we override this to restrict to the legit beneficiary only
@@ -36,7 +40,8 @@ contract ValorTimelock is TokenTimelock, Ownable{
     }
 
     /**
-    * @notice Transfers some tokens held by timelock to beneficiary.
+    * @dev it releases some tokens held by this contract to beneficiary.
+    * @param amount the number of tokens to be sent to beneficiary
     */
     function partialRelease(uint256 amount) public {
         //restrict this tx to the legit beneficiary only
@@ -53,9 +58,9 @@ contract ValorTimelock is TokenTimelock, Ownable{
 
 
     /**
-     * @notice immediately Transfers tokens held by timelock to beneficiary
-     * bypassing timelock
-     */
+    * @dev it releases all tokens held by this contract to beneficiary. This 
+    * can be used by owner only and it works anytime
+    */
     function emergencyRelease() onlyOwner public{
         uint256 amount = token.balanceOf(address(this));
         require(amount > 0);

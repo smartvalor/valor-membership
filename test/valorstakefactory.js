@@ -4,8 +4,6 @@
 
 
 var util = require ("./util.js");
-
-
 var BigNumber      = util.BigNumber;
 
 const day = 86400; 
@@ -84,43 +82,12 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
     });
 
 
-   it("nobody, except company, can create stake with beneficiary other than himself", async () => {
-     //someUser preapproves 5000 VALOR allowance to factory
-     await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
-     //simulate a create stake from someUser
-     await this.factory.createStakeOnBehalf.sendTransaction( anotherUser,
-                                                             1 * day, 
-                                                             5000 * VALOR, 
-                                                             {from: someUser}).should.be.rejected;
-
- 
-    });
-
-
     it("change factory ownership from companyWallet to anotherUser", async () => {
         await this.factory.transferOwnership(anotherUser,{from:companyWallet}).should.be.fulfilled;
         (await this.factory.owner.call()).should.be.equal(anotherUser);
 
     });
 
-
-
-    it("BD-57 Fix -- companyWallet manages funds on behalf of someUser and creates a stake for him", async () => {
-     
-     //someUser has tokens manged by company
-     //NOTICE: it is company who is approving allowance to factory
-     await this.token.approve(this.factory.address, 5000 * VALOR, {from:companyWallet});
-         
-     //company creates stake (eg. from platform) on behalf of someUser using
-     //funds managed by company on behlaf of user
-     await this.factory.createStakeOnBehalf.sendTransaction(
-                                                    someUser,
-                                                    1 * day, 
-                                                    5000 * VALOR, 
-                                                    {from: companyWallet})
-     .should.be.fulfilled;
-
-    });
 
     it("factory emits an event for each stake, ", async () => {
 
