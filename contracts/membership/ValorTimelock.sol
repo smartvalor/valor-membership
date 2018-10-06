@@ -49,11 +49,11 @@ contract ValorTimelock is TokenTimelock, Ownable{
         //check time is done
         require(block.timestamp >= releaseTime);
         
-        uint256 balance = token.balanceOf(this);
+        uint256 balance = token.balanceOf(address(this));
         require(balance >= amount);
         require(amount > 0);
 
-        token.safeTransfer(beneficiary, amount);
+        token.transfer(beneficiary, amount);
     }
 
 

@@ -30,6 +30,9 @@ contract ValorStakeFactory is Ownable, Pausable{
     constructor(address _tokenAddress, address companyWallet) public{
         require(_tokenAddress != address(0));
         require(companyWallet != address(0));
+
+        //we don't want the following happen
+        require(_tokenAddress != companyWallet);
     	token = ERC20(_tokenAddress);
         owner = companyWallet;
     }
@@ -42,7 +45,8 @@ contract ValorStakeFactory is Ownable, Pausable{
     function createStake(uint256 lockPeriod, uint256 atStake) 
     public whenNotPaused {
         require(lockPeriod <= 365 * 86400);//being 1 day = 86400s
-        ValorTimelock stake = new ValorTimelock(token, msg.sender, owner, lockPeriod);
+        address beneficiary = msg.sender;
+        ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
         token.transferFrom(msg.sender, address(stake), atStake);
         emit StakeCreated(address(stake), msg.sender, lockPeriod, atStake);
     }
