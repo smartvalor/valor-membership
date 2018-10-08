@@ -44,7 +44,7 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
   });
 
 
-  it.only("after release time the tokens can be unlocked by beneficiary", async () => {
+  it("after release time the tokens can be unlocked by beneficiary", async () => {
     await util.increaseTimeTo(this.releaseTime);
     await this.timelock.release.sendTransaction({from: someUser}).should.be.fulfilled;
     (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(0);
