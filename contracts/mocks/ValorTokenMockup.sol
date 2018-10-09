@@ -8,7 +8,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/StandardBurnableToken.sol";
  */
 contract ValorTokenMockup is StandardBurnableToken {
     string public constant name    =   "ValorToken (mockup)";
-    string public constant symbol  =   "VALOR (mockup)";
+    string public constant symbol  =   "VALORmock";
     uint8 public constant decimals =   18;
 
     // initial supply addresses
