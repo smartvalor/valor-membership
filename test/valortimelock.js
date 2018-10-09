@@ -53,18 +53,27 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
 
 
   it("company can release anytime (ie. in case of emergency, security exploit etc.) the stake", async () => {
+    (await util.latestTime()).should.be.bignumber.below(this.releaseTime);
     await this.timelock.emergencyRelease.sendTransaction({from: companyWallet}).should.be.fulfilled;
     (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(0);
     (await this.token.balanceOf(someUser)).should.be.bignumber.equal(holdings);
   });
 
  it("tokens cannot be released by anyone (except emergency pull by company) before releaseTime", async () => {
+    (await util.latestTime()).should.be.bignumber.below(this.releaseTime);
     await this.timelock.release.sendTransaction({from: someUser}).should.be.rejected;
     await this.timelock.release.sendTransaction({from: companyWallet}).should.be.rejected;
     await this.timelock.release.sendTransaction({from: anotherUser}).should.be.rejected;
 
   });
 
+ it("partial release is forbidden before releaseTime", async () => {
+    (await util.latestTime()).should.be.bignumber.below(this.releaseTime);
+    await this.timelock.partialRelease.sendTransaction({from: someUser}).should.be.rejected;
+    await this.timelock.partialRelease.sendTransaction({from: companyWallet}).should.be.rejected;
+    await this.timelock.partialRelease.sendTransaction({from: anotherUser}).should.be.rejected;
+
+  });
 
   it("after release time the legit user can pull a fraction of the funds", async () => {
     await util.increaseTimeTo(this.releaseTime);
@@ -74,6 +83,7 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
     (await this.token.balanceOf(someUser)).should.be.bignumber.equal(reimbursement);    
   });
 
+
   it("after release time the legit user cannot pull more funds than available", async () => {
     await util.increaseTimeTo(this.releaseTime);
     const reimbursement = (new BigNumber(holdings)).add(1);
@@ -81,6 +91,23 @@ contract('ValorTimelock', async ([companyWallet,someUser,anotherUser]) => {
     await this.timelock.partialRelease.sendTransaction(reimbursement,{from: someUser}).should.be.rejected;   
   });
 
+  it("after release time the legit user can do multiple partial releases", async () => {
+    await util.increaseTimeTo(this.releaseTime);
+    const reimbursement = 100 * VALOR;
+    console.log("reimbursement:"+reimbursement);
+
+    await this.timelock.partialRelease.sendTransaction(reimbursement,{from: someUser}).should.be.fulfilled;
+    (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(holdings - reimbursement);
+    (await this.token.balanceOf(someUser)).should.be.bignumber.equal(reimbursement);
+
+    //increase time to later
+    await util.increaseTimeTo(this.releaseTime.add(86400));
+
+    await this.timelock.partialRelease.sendTransaction(reimbursement,{from: someUser}).should.be.fulfilled;
+    (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(holdings - 2*reimbursement);
+    (await this.token.balanceOf(someUser)).should.be.bignumber.equal(2*reimbursement);
+
+  });
 
   it("after release time, ONLY the legit user can pull a fraction of the funds", async () => {
     await util.increaseTimeTo(this.releaseTime);
