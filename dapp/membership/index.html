@@ -469,6 +469,29 @@
         }
 
 
+        function decodeLogs(txRcpt){
+          const inputs = [{
+              type: 'address',
+              name: 'stake'
+          },{
+              type: 'address',
+              name: 'beneficiary'
+          },{
+              type: 'uint256',
+              name: 'locktime',
+
+          },{
+              type: 'uint256',
+              name: 'amount',
+          }]; 
+
+          const data = txRcpt.logs[1].data;
+          const topics = txRcpt.logs[1].topics;
+          const parsed = web3.eth.abi.decodeLog(inputs,data,topics);
+          console.log(JSON.stringify(parsed));
+          return parsed;
+        }
+
             
         function updateInfoView(){
           el("info").innerHTML = "";
@@ -504,7 +527,6 @@
                     
                   }
                   else  el("approve-tx-status").innerHTML = "pending";
-
           });
 
         }
@@ -532,11 +554,13 @@
         function updateStakeView(){
           let lock_tx = el("lock-tx").innerHTML;
           if(lock_tx.length !== 0)
-              web3.eth.getTransaction(lock_tx,function(er,tx){
-                if(tx.blockNumber !== null){
-
-
-                    
+              web3.eth.getTransactionReceipt(lock_tx,function(er,rcpt){
+                if(rcpt.blockNumber !== null){
+                  stake = decodeLogs(rcpt);
+                  el("stake-stake").innerHTML=stake.stake;
+                  el("stake-beneficiary").innerHTML=stake.beneficiary;
+                  el("stake-locktime").innerHTML=stake.locktime;
+                  el("stake-amount").innerHTML=stake.amount;
               }});
         }
 
@@ -627,10 +651,12 @@
   <span id="lock-tx"></span>-----<span id="lock-tx-status"></span>
 
 </div>
-
+<h2>Stake</h2>
 <div id="stake">
   stake address:
-  <p id="stake-address"></p>
+  <p id="stake-stake"></p>
+  stake beneficiary:
+  <p id="stake-beneficiary"></p>
   stake amount:
   <p id="stake-amount"></p>
   stake locktime:
