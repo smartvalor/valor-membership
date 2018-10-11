@@ -1,5 +1,8 @@
 <html>
 <head>
+
+
+    <script src="web3.min.js"></script>
     
     <script type="text/javascript">
         var ABI = [
@@ -430,22 +433,17 @@
         const VALOR     = VALORContract.at(VALORAddress);
 
 
-
-
-
         function approve(){
             var atStake = el("atStake").value;
             VALOR.approve(  factoryAddress,
-							atStake, 
+							    atStake, 
 					        {gas : 50000},
 					        function(err,tx){
 					            if(err) {
 					                console.log(err);
 					                alert(err);
 					            } else{
-					                console.log(tx);
-					                alert('wait '+tx+ ' to be confirmed');
-					                el("lockButton").disabled = false; 
+                          el("approve-tx").innerHTML = tx;
 					            }
 					        });
         }
@@ -454,7 +452,7 @@
             var atStake = el("atStake").value;
             var event = factory.StakeCreated();
             factory.createStake(3600,
-            					atStake, 
+            					          atStake, 
                                 { gas : 500000},
                                 function(err,tx){
                                     if(err) {
@@ -462,7 +460,8 @@
                                         alert(err);
                                     } else{
                                         console.log(tx);
-                                        addLine("create stake tx", tx);
+                                        el("lock-tx").innerHTML = tx;
+                                    
                                     }
                                 });
 
@@ -471,12 +470,85 @@
 
 
             
-            
+        function updateInfoView(){
+          el("info").innerHTML = "";
+          addLine("web3.version.api",web3.version);
+          addLine("contract factoryAddress",factoryAddress);
+          // accounts = web3.eth.accounts;
+          web3.eth.getAccounts(function (error, accounts) {
+              if (accounts.length > 0) {
+                  var account = accounts[0];
+                  addLine("Your account", account);              
+                  web3.eth.getBalance(account, function (err, wei) {
+                      var balance = wei.toString();
+                      addLine("ETH balance", balance);
+                  });
+
+                  VALOR.balanceOf(account,function(err,balance){
+                    addLine("VALOR balance", balance);
+                  });
+              }
+          });              
+        }    
+
+
+
+        function updateApproveView(){
+          let approve_tx = el("approve-tx").innerHTML;
+          if(approve_tx.length !== 0)
+              web3.eth.getTransaction(approve_tx,function(er,tx){
+                  if(tx.blockNumber !== null){
+                    el("approve-tx-status").innerHTML = "confirmed";
+                    el("lockButton").disabled = false;
+                    el("approveButton").disabled = true;
+                    
+                  }
+                  else  el("approve-tx-status").innerHTML = "pending";
+
+          });
+
+        }
             
 
-        function getEvents(){
-        	console.log("getEvents");
-			factory.StakeCreated();
+
+        function updateLockView(){
+          let lock_tx = el("lock-tx").innerHTML;
+          if(lock_tx.length !== 0)
+              web3.eth.getTransaction(lock_tx,function(er,tx){
+                  if(tx.blockNumber !== null){
+                    el("lock-tx-status").innerHTML = "confirmed";
+                   
+                    el("lockButton").disabled = true;
+                    el("approveButton").disabled = true;
+                    
+                  }
+                  else  el("lock-tx-status").innerHTML = "pending";
+
+          });
+
+        }
+
+
+        function updateStakeView(){
+          let lock_tx = el("lock-tx").innerHTML;
+          if(lock_tx.length !== 0)
+              web3.eth.getTransaction(lock_tx,function(er,tx){
+                if(tx.blockNumber !== null){
+
+
+                    
+              }});
+        }
+
+        function updateView(){
+        	console.log("*** updateView ***");
+
+          updateInfoView();
+          updateApproveView();
+          updateLockView();
+          updateStakeView();
+
+          
         }
 		 
 
@@ -489,7 +561,7 @@
         function addLine(label, value) {
             var p = document.createElement('p');
             p.textContent = label.toString() + ": " + value.toString();
-            document.body.appendChild(p);
+            el("info").appendChild(p);
         }
 
 
@@ -500,8 +572,6 @@
 
         function testETH() {
             if (typeof web3 !== 'undefined') {
-                addLine("web3.version.api",web3.version.api);
-
                 var network = web3.version.getNetwork(function (err, netId) {
                     switch (netId) {
                         case "1":
@@ -525,53 +595,51 @@
                     addLine("Network", netId+"."+netname);
                 });
 
-                // accounts = web3.eth.accounts;
-                web3.eth.getAccounts(function (error, accounts) {
-                    addLine("n° of accounts", accounts.length);
-                    if (accounts.length > 0) {
-                        var account = accounts[0];
-                        addLine("Your account", account);              
-                        web3.eth.getBalance(account, function (err, wei) {
-                            var eth = web3.fromWei(wei, 'ether');
-                            var balance = (eth.toString() + " ETH (" + wei.toString() + " wei)");
-                            addLine("ETH balance", balance);
-                        });
-
-                        VALOR.balanceOf(account,function(err,balance){
-                        	addLine("VALOR balance", balance);
-                        });
-
-
-
-                    }
-                });
-            } else {
-                addLine("Please use this with a web3 provider, like MetaMask","");
-            }
-
-            addLine("contract factoryAddress",factoryAddress);
-
-
+                if (window.web3) {
+                  // Then replace the old injected version by the latest build of Web3.js version 1.0.0
+                  window.web3 = new Web3(window.web3.currentProvider);
+                }
+                
+                updateView();
+                web3.currentProvider.publicConfigStore.on('update',updateView);
 
         }
+      }
+
     </script>
 </head>
 <body onload="testETH()">
 <h1>Create Stake Basic Dapp</h1>
 <div>
     <input type="text" id="atStake" placeholder="insert token amount, eg. 10000000 ..."/><br/>
-    <button onclick="approve();">Preapprove</button>
+    <button  id="approveButton" onclick="approve();">Preapprove</button>
 	<button id="lockButton" disabled onclick="createStake();">Lock Funds</button>
-    <button id="getEvents"  onclick="getEvents();">Get Events</button>
+   
+</div>
+
+<h2>Approve tx</h2>
+<div id="approve">
+  <span id="approve-tx"></span>-----<span id="approve-tx-status"></span>
+
+</div>
+<h2>Lock tx</h2>
+<div id="lock">
+  <span id="lock-tx"></span>-----<span id="lock-tx-status"></span>
+
+</div>
+
+<div id="stake">
+  stake address:
+  <p id="stake-address"></p>
+  stake amount:
+  <p id="stake-amount"></p>
+  stake locktime:
+  <p id="stake-locktime"></p>
+
 </div>
 
 
-
-
-<div id="stakes">
-    <h2>Stakes you created</h2>
-
-</div>
 <h2>Other info</h2>
+<div id="info"></div>
 </body>
 </html>
