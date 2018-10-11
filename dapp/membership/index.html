@@ -1,0 +1,577 @@
+<html>
+<head>
+    
+    <script type="text/javascript">
+        var ABI = [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "unpause",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "paused",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "pause",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "factoryAddress"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_newOwner",
+          "type": "factoryAddress"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "token",
+      "outputs": [
+        {
+          "name": "",
+          "type": "factoryAddress"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_tokenfactoryAddress",
+          "type": "factoryAddress"
+        },
+        {
+          "name": "companyWallet",
+          "type": "factoryAddress"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "stake",
+          "type": "factoryAddress"
+        },
+        {
+          "indexed": false,
+          "name": "beneficiary",
+          "type": "factoryAddress"
+        },
+        {
+          "indexed": false,
+          "name": "lockPeriod",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "atStake",
+          "type": "uint256"
+        }
+      ],
+      "name": "StakeCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "Pause",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "Unpause",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "factoryAddress"
+        }
+      ],
+      "name": "OwnershipRenounced",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "factoryAddress"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "factoryAddress"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "lockPeriod",
+          "type": "uint256"
+        },
+        {
+          "name": "atStake",
+          "type": "uint256"
+        }
+      ],
+      "name": "createStake",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "dismiss",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ];
+
+
+  const erc20ABI=[
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_spender",
+                "type": "address"
+            },
+            {
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "approve",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_from",
+                "type": "address"
+            },
+            {
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_owner",
+                "type": "address"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "transfer",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_owner",
+                "type": "address"
+            },
+            {
+                "name": "_spender",
+                "type": "address"
+            }
+        ],
+        "name": "allowance",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "fallback"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "owner",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "spender",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Approval",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Transfer",
+        "type": "event"
+    }
+];
+
+        const factoryAddress = "0x4bd1cc20e97cbaa12365078cf292ef17d105860b";
+        const StakeFactoryContract =web3.eth.contract(ABI);
+        const factory     = StakeFactoryContract.at(factoryAddress);
+        const VALORAddress = "0x6e748fe8f1f344ce557bfdbf29c085aa0dff73b9";
+        const VALORContract = web3.eth.contract(erc20ABI);
+        const VALOR     = VALORContract.at(VALORAddress);
+
+
+
+
+
+        function approve(){
+            var atStake = el("atStake").value;
+            VALOR.approve(  factoryAddress,
+							atStake, 
+					        {gas : 50000},
+					        function(err,tx){
+					            if(err) {
+					                console.log(err);
+					                alert(err);
+					            } else{
+					                console.log(tx);
+					                alert('wait '+tx+ ' to be confirmed');
+					                el("lockButton").disabled = false; 
+					            }
+					        });
+        }
+
+        function createStake(){
+            var atStake = el("atStake").value;
+            var event = factory.StakeCreated();
+            factory.createStake(3600,
+            					atStake, 
+                                { gas : 500000},
+                                function(err,tx){
+                                    if(err) {
+                                        console.log(err);
+                                        alert(err);
+                                    } else{
+                                        console.log(tx);
+                                        addLine("create stake tx", tx);
+                                    }
+                                });
+
+
+        }
+
+
+            
+            
+            
+
+        function getEvents(){
+        	console.log("getEvents");
+			factory.StakeCreated();
+        }
+		 
+
+            
+                
+ 
+                    
+        
+
+        function addLine(label, value) {
+            var p = document.createElement('p');
+            p.textContent = label.toString() + ": " + value.toString();
+            document.body.appendChild(p);
+        }
+
+
+
+        function el(elementID){
+            return document.getElementById(elementID);
+        }
+
+        function testETH() {
+            if (typeof web3 !== 'undefined') {
+                addLine("web3.version.api",web3.version.api);
+
+                var network = web3.version.getNetwork(function (err, netId) {
+                    switch (netId) {
+                        case "1":
+                            netname = 'Main net';
+                            break;
+                        case "2":
+                            netname = 'Morden test (deprecated)';
+                            break;
+                        case "3":
+                            netname = 'Ropsten test';
+                            break;
+                        case "4":
+                            netname = 'Rinkeby test';
+                            break;
+                        case "42":
+                            netname = 'Kovan test';
+                            break;
+                        default:
+                            netname = 'unknown network';
+                    }
+                    addLine("Network", netId+"."+netname);
+                });
+
+                // accounts = web3.eth.accounts;
+                web3.eth.getAccounts(function (error, accounts) {
+                    addLine("n° of accounts", accounts.length);
+                    if (accounts.length > 0) {
+                        var account = accounts[0];
+                        addLine("Your account", account);              
+                        web3.eth.getBalance(account, function (err, wei) {
+                            var eth = web3.fromWei(wei, 'ether');
+                            var balance = (eth.toString() + " ETH (" + wei.toString() + " wei)");
+                            addLine("ETH balance", balance);
+                        });
+
+                        VALOR.balanceOf(account,function(err,balance){
+                        	addLine("VALOR balance", balance);
+                        });
+
+
+
+                    }
+                });
+            } else {
+                addLine("Please use this with a web3 provider, like MetaMask","");
+            }
+
+            addLine("contract factoryAddress",factoryAddress);
+
+
+
+        }
+    </script>
+</head>
+<body onload="testETH()">
+<h1>Create Stake Basic Dapp</h1>
+<div>
+    <input type="text" id="atStake" placeholder="insert token amount, eg. 10000000 ..."/><br/>
+    <button onclick="approve();">Preapprove</button>
+	<button id="lockButton" disabled onclick="createStake();">Lock Funds</button>
+    <button id="getEvents"  onclick="getEvents();">Get Events</button>
+</div>
+
+
+
+
+<div id="stakes">
+    <h2>Stakes you created</h2>
+
+</div>
+<h2>Other info</h2>
+</body>
+</html>
