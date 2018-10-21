@@ -16,10 +16,15 @@ contract ValorStakeFactory is Ownable, Pausable{
     ERC20 public token;
 
     //event to emit at each creation of a new timelock contract
-    event StakeCreated(address stake, 
-                       address beneficiary,
-                       uint256 lockPeriod, 
-                       uint256 atStake); 
+    event StakeCreated(
+        address indexed stake, 
+        address indexed beneficiary,
+        uint256 lockPeriod, 
+        uint256 atStake
+    );
+
+    //event to emit at factory dismissal
+    event FactoryDismiss();
 
 
     /**
@@ -56,6 +61,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     * @dev transfers the current balance to the owner and terminates the factory.
     */
     function dismiss() onlyOwner public {
+        emit FactoryDismiss();
         selfdestruct(owner);
     }
 
