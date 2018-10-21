@@ -12,7 +12,11 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 contract ValorTimelock{
 
 
-    event EmergencyRelease(address from, address to, uint256 value);
+    event EmergencyRelease(
+        address from, 
+        address to, 
+        uint256 value
+    );
 
     // ERC20 basic token contract being held
     ERC20 public token;
