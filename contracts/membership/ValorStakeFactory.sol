@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 import "./ValorTimelock.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
@@ -47,7 +47,7 @@ contract ValorStakeFactory is Ownable, Pausable{
         require(lockPeriod <= 365 * 86400);//being 1 day = 86400s
         address beneficiary = msg.sender;
         ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
-        token.transferFrom(msg.sender, address(stake), atStake);
+        require(token.transferFrom(msg.sender, address(stake), atStake));
         emit StakeCreated(address(stake), msg.sender, lockPeriod, atStake);
     }
 

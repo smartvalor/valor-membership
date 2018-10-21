@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
  
@@ -57,14 +57,17 @@ contract ValorTimelock{
     function partialRelease(uint256 amount) public {
         //restrict this tx to the legit beneficiary only
         require(msg.sender == beneficiary);
-        //check time is done
+
+        //check time is done       
+        //according to 15sec rule, this contract can tolerate a drift of 15sec
+        //so that the use of block.timestamp can be considered safe
         require(block.timestamp >= releaseTime);
         
         uint256 balance = token.balanceOf(address(this));
         require(balance >= amount);
         require(amount > 0);
 
-        token.transfer(beneficiary, amount);
+        require(token.transfer(beneficiary, amount));
     }
 
 
@@ -76,7 +79,7 @@ contract ValorTimelock{
         require(msg.sender == owner);
         uint256 amount = token.balanceOf(address(this));
         require(amount > 0);
-        token.transfer(beneficiary, amount);
+        require(token.transfer(beneficiary, amount));
         emit EmergencyRelease(msg.sender, beneficiary, amount);
     }
 
