@@ -241,7 +241,7 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
         await this.factory.setMinCreateStakeValues(minLockPeriod + (1 * month), minAtStake + (250 * VALOR),{from: companyWallet});
 
         // and validate that we can no longer create a stake with original values
-        await this.token.approve(this.factory.address, minAtStake+(250 * VALOR), {from:someUser});
+        await this.token.approve(this.factory.address, 500*VALOR, {from:someUser});
         await this.factory.createStake(minLockPeriod, minAtStake,{from: someUser}).should.be.rejected;
 
         await this.factory.createStake(minLockPeriod + (1 * month), minAtStake + (250 * VALOR),{from: someUser}).should.be.rejected;
