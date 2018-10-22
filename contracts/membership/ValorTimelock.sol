@@ -1,11 +1,11 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
- 
+
 /**
  * @title ValorTimelock
  * @dev ValorTimelock is a VALOR token holder contract that will allow a
- * beneficiary to extract the tokens after a given release time and includes an 
+ * beneficiary to extract the tokens after a given release time and includes an
  * emergency exit mechanism which can be activated by owner (Smart Valor) to immediately
  * recover funds towards beneficiary
  */
@@ -31,7 +31,7 @@ contract ValorTimelock{
      * @param _token the token managed by this contract
      * @param _beneficiary the address which will receive the locked funds at due time
      * @param _admin the account which can activate the emergency release
-     * @param duration locking period in secs 
+     * @param duration locking period in secs
      */
     constructor(ERC20 _token, address _beneficiary, address _admin, uint256 duration )
     public {
@@ -45,7 +45,7 @@ contract ValorTimelock{
     /**
     * @dev it releases all tokens held by this contract to beneficiary.
     */
-    function release() public {
+    function release() external {
         uint256 balance = token.balanceOf(address(this));
         partialRelease(balance);
     }
@@ -59,7 +59,7 @@ contract ValorTimelock{
         require(msg.sender == beneficiary);
         //check time is done
         require(block.timestamp >= releaseTime);
-        
+
         uint256 balance = token.balanceOf(address(this));
         require(balance >= amount);
         require(amount > 0);
@@ -69,10 +69,10 @@ contract ValorTimelock{
 
 
     /**
-    * @dev it releases all tokens held by this contract to beneficiary. This 
+    * @dev it releases all tokens held by this contract to beneficiary. This
     * can be used by owner only and it works anytime
     */
-    function emergencyRelease() public{
+    function emergencyRelease() external{
         require(msg.sender == owner);
         uint256 amount = token.balanceOf(address(this));
         require(amount > 0);
