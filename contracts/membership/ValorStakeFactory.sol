@@ -7,7 +7,7 @@ import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 /**
  * @title ValorStakeFactory
  * @dev ValorStakeFactory creates ValorTimelock objects on demand
- * the ownership of factory is assigned to companyWallet and it can be 
+ * the ownership of factory is assigned to companyWallet and it can be
  * different from deployer msg.sender
  */
 contract ValorStakeFactory is Ownable, Pausable{
@@ -16,15 +16,15 @@ contract ValorStakeFactory is Ownable, Pausable{
     ERC20 public token;
 
     //event to emit at each creation of a new timelock contract
-    event StakeCreated(address stake, 
+    event StakeCreated(address stake,
                        address beneficiary,
-                       uint256 lockPeriod, 
-                       uint256 atStake); 
+                       uint256 lockPeriod,
+                       uint256 atStake);
 
 
     /**
     * @dev it creates a new instance
-    * @param _tokenAddress the address of token contract to be managed 
+    * @param _tokenAddress the address of token contract to be managed
     * @param companyWallet the account who owns the factory
     */
     constructor(address _tokenAddress, address companyWallet) public{
@@ -42,9 +42,9 @@ contract ValorStakeFactory is Ownable, Pausable{
     * @param lockPeriod the duration of timelock in secs
     * @param atStake the amount of tokens to be held
     */
-    function createStake(uint256 lockPeriod, uint256 atStake) 
+    function createStake(uint256 lockPeriod, uint256 atStake)
     public whenNotPaused {
-        require(lockPeriod <= 365 * 86400);//being 1 day = 86400s
+        require(lockPeriod <= 365 days);
         address beneficiary = msg.sender;
         ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
         token.transferFrom(msg.sender, address(stake), atStake);
