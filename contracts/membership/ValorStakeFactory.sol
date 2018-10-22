@@ -43,8 +43,9 @@ contract ValorStakeFactory is Ownable, Pausable{
     * @param atStake the amount of tokens to be held
     */
     function createStake(uint256 lockPeriod, uint256 atStake)
-    public whenNotPaused {
+      whenNotPaused external{
         require(lockPeriod <= 365 days);
+
         address beneficiary = msg.sender;
         ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
         require(token.transferFrom(msg.sender, address(stake), atStake));
@@ -55,7 +56,8 @@ contract ValorStakeFactory is Ownable, Pausable{
     /**
     * @dev transfers the current balance to the owner and terminates the factory.
     */
-    function dismiss() onlyOwner public {
+    function dismiss()
+      onlyOwner external {
         selfdestruct(owner);
     }
 
