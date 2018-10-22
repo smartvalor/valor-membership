@@ -12,6 +12,11 @@ import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
  */
 contract ValorStakeFactory is Ownable, Pausable{
 
+    // minimum time lock period we request to create stake
+    uint256 public minLockPeriod;
+    // minimum amount of tokens we request to create stake
+    uint256 public minAtStake;
+
     //the token managed by this factory
     ERC20 public token;
 
@@ -33,8 +38,13 @@ contract ValorStakeFactory is Ownable, Pausable{
 
         //we don't want the following happen
         require(_tokenAddress != companyWallet);
-    	token = ERC20(_tokenAddress);
+    	  token = ERC20(_tokenAddress);
         owner = companyWallet;
+
+        // setting up minimum values
+        minLockPeriod = 30 days * 6; // 6 months
+        minAtStake = 250 * 1e18; // 250 ValorTokens
+
     }
 
     /**
@@ -44,7 +54,9 @@ contract ValorStakeFactory is Ownable, Pausable{
     */
     function createStake(uint256 lockPeriod, uint256 atStake)
     public whenNotPaused {
-        require(lockPeriod <= 365 days);
+        require(lockPeriod <= 365 days && lockPeriod >= minLockPeriod);
+        require(atStake >= minAtStake );
+
         address beneficiary = msg.sender;
         ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
         token.transferFrom(msg.sender, address(stake), atStake);
@@ -58,5 +70,15 @@ contract ValorStakeFactory is Ownable, Pausable{
     function dismiss() onlyOwner public {
         selfdestruct(owner);
     }
+
+    /**
+    * @dev we allow the owner to set up new min values for LockPeriod and atStake.
+    */
+    function setMinCreateStakeValues(uint256 _minLockPeriod, uint256 _minAtStake)
+      onlyOwner
+      external {
+        minLockPeriod = _minLockPeriod;
+        minAtStake = _minAtStake;
+      }
 
 }
