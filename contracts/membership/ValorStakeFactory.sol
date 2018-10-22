@@ -16,8 +16,8 @@ contract ValorStakeFactory is Ownable, Pausable{
     ERC20 public token;
 
     //event to emit at each creation of a new timelock contract
-    event StakeCreated(address stake,
-                       address beneficiary,
+    event StakeCreated(address indexed stake,
+                       address indexed beneficiary,
                        uint256 lockPeriod,
                        uint256 atStake);
 
@@ -25,31 +25,30 @@ contract ValorStakeFactory is Ownable, Pausable{
     /**
     * @dev it creates a new instance
     * @param _tokenAddress the address of token contract to be managed
-    * @param companyWallet the account who owns the factory
+    * @param _companyWallet the account who owns the factory
     */
-    constructor(address _tokenAddress, address companyWallet) public{
+    constructor(address _tokenAddress, address _companyWallet) public{
         require(_tokenAddress != address(0));
-        require(companyWallet != address(0));
+        require(_companyWallet != address(0));
 
         //we don't want the following happen
-        require(_tokenAddress != companyWallet);
-    	token = ERC20(_tokenAddress);
-        owner = companyWallet;
+        require(_tokenAddress != _companyWallet);
+        token = ERC20(_tokenAddress);
+        owner = _companyWallet;
     }
 
     /**
     * @dev it creates a new timelock upon request
-    * @param lockPeriod the duration of timelock in secs
-    * @param atStake the amount of tokens to be held
+    * @param _lockPeriod the duration of timelock in secs
+    * @param _atStake the amount of tokens to be held
     */
-    function createStake(uint256 lockPeriod, uint256 atStake)
+    function createStake(uint256 _lockPeriod, uint256 _atStake)
       whenNotPaused external{
-        require(lockPeriod <= 365 days);
+        require(_lockPeriod <= 365 days);
 
-        address beneficiary = msg.sender;
-        ValorTimelock stake = new ValorTimelock(token, beneficiary, owner, lockPeriod);
-        require(token.transferFrom(msg.sender, address(stake), atStake));
-        emit StakeCreated(address(stake), msg.sender, lockPeriod, atStake);
+        ValorTimelock stake = new ValorTimelock(token, msg.sender, owner, _lockPeriod);
+        require(token.transferFrom(msg.sender, address(stake), _atStake));
+        emit StakeCreated(address(stake), msg.sender, _lockPeriod, _atStake);
     }
 
 

@@ -12,7 +12,11 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 contract ValorTimelock{
 
 
-    event EmergencyRelease(address from, address to, uint256 value);
+    event EmergencyRelease(
+        address from, 
+        address to, 
+        uint256 value
+    );
 
     // ERC20 basic token contract being held
     ERC20 public token;
@@ -31,13 +35,13 @@ contract ValorTimelock{
      * @param _token the token managed by this contract
      * @param _beneficiary the address which will receive the locked funds at due time
      * @param _admin the account which can activate the emergency release
-     * @param duration locking period in secs
+     * @param _duration locking period in secs
      */
-    constructor(ERC20 _token, address _beneficiary, address _admin, uint256 duration )
+    constructor(ERC20 _token, address _beneficiary, address _admin, uint256 _duration )
     public {
         token = _token;
         beneficiary = _beneficiary;
-        releaseTime = block.timestamp + duration;//watchout, no safe math
+        releaseTime = block.timestamp + _duration;//watchout, no safe math
         owner = _admin;
     }
 
@@ -52,9 +56,9 @@ contract ValorTimelock{
 
     /**
     * @dev it releases some tokens held by this contract to beneficiary.
-    * @param amount the number of tokens to be sent to beneficiary
+    * @param _amount the number of tokens to be sent to beneficiary
     */
-    function partialRelease(uint256 amount) public {
+    function partialRelease(uint256 _amount) public {
         //restrict this tx to the legit beneficiary only
         require(msg.sender == beneficiary);
 
@@ -64,10 +68,10 @@ contract ValorTimelock{
         require(block.timestamp >= releaseTime);
 
         uint256 balance = token.balanceOf(address(this));
-        require(balance >= amount);
-        require(amount > 0);
+        require(balance >= _amount);
+        require(_amount > 0);
 
-        require(token.transfer(beneficiary, amount));
+        require(token.transfer(beneficiary, _amount));
     }
 
 
