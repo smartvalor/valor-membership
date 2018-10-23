@@ -164,6 +164,97 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
     });
 
 
+    it("countByBeneficiary() == 0 if user did not create stakes", async () => {
+        let count = await this.factory.countByBeneficiary.call(someUser);
+        console.log(count);
+        count.toNumber().should.be.equal(0);
+    });
+
+
+
+    it("Alice creates one stake and later checks it", async () => {
+        //someUser approves 5000 VALOR allowance to factory
+        await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
+
+        await this.factory.createStake.sendTransaction( 365 * day, 
+                                                        5000 * VALOR, 
+                                                        {from: someUser})
+        .should.be.fulfilled;
+
+
+        let stakeAddr = await this.factory.lookupByBeneficiary.call(someUser,0);
+
+        let stake = await ValorTimelock.at(stakeAddr);
+
+        (await stake.beneficiary.call()).should.be.equal(someUser);
+        (await stake.releaseTime.call()).should.be.bignumber.equal(util.latestTime() + 365*day);
+
+    });
+
+    it("Alice and Bob create many stakes and later browse them", async () => {
+        //give some fuels to anotherUser
+        await this.token.transfer(anotherUser, 5000 * VALOR, {from:companyWallet});
+
+        //someUser and anotherUser approve 5000 VALOR allowance to factory
+        await this.token.approve(this.factory.address, 4500 * VALOR, {from:someUser});
+        await this.token.approve(this.factory.address, 5000 * VALOR, {from:anotherUser});
+
+        //burst of stakes created by some user
+        await this.factory.createStake.sendTransaction( 365  * day, 
+                                                        1500 * VALOR, 
+                                                        {from: someUser})
+
+
+        await this.factory.createStake.sendTransaction( 365  * day, 
+                                                        1500 * VALOR, 
+                                                        {from: someUser})
+
+
+
+        await this.factory.createStake.sendTransaction( 365  * day, 
+                                                        1500 * VALOR, 
+                                                        {from: someUser})
+       
+        //burst of stakes created by another user
+        await this.factory.createStake.sendTransaction( 180  * day, 
+                                                        2500 * VALOR, 
+                                                        {from: anotherUser})
+        await this.factory.createStake.sendTransaction( 180  * day, 
+                                                        2500 * VALOR, 
+                                                        {from: anotherUser})
+
+
+        //lets count how many stakes are created
+        let numSomeUser = await this.factory.countByBeneficiary.call(someUser);
+        //test
+        numSomeUser.should.be.bignumber.equal(3);
+
+        //iterate over stake records and verify
+        for(i=0; i< numSomeUser; i++){
+            let stakeAddr = await this.factory.lookupByBeneficiary.call(someUser,i);
+            let stake = await ValorTimelock.at(stakeAddr);
+            
+            (await stake.beneficiary.call()).should.be.equal(someUser);
+            (await stake.releaseTime.call()).toNumber().should.be.closeTo(util.latestTime() + 365*day, 60);
+        }
+
+        //same of above, but for anotherUser
+        let numAnotherUser = await this.factory.countByBeneficiary.call(anotherUser);
+
+        numAnotherUser.should.be.bignumber.equal(2);
+
+        for(i=0; i< numAnotherUser; i++){
+            let stakeAddr = await this.factory.lookupByBeneficiary.call(anotherUser,i);
+            let stake = await ValorTimelock.at(stakeAddr);
+            console.log(stakeAddr);
+            (await stake.beneficiary.call()).should.be.equal(anotherUser);
+            (await stake.releaseTime.call()).toNumber().should.be.closeTo(util.latestTime() + 180*day, 60);
+        }
+
+
+    });
+
+
 
     it("Once the user Alice preapproves tokens, user Charlie cannot create stake for Alice", async () => {
         //someUser approves 5000 VALOR allowance to factory
