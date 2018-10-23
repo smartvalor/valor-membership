@@ -75,13 +75,21 @@ contract ValorStakeFactory is Ownable, Pausable{
     }
 
     /**
-    * @dev we allow the owner to set up new min values for LockPeriod and atStake.
+    * @dev we allow the owner to set up new min value for Stake
     */
-    function setMinCreateStakeValues(uint32 _minLockPeriod, uint256 _minStake)
+    function setMinStake(uint256 _minStake)
+      onlyOwner
+      external {
+        minStake = _minStake;
+      }
+
+    /**
+    * @dev we allow the owner to set up new min value for LockPeriod
+    */
+    function setMinLockPeriod(uint32 _minLockPeriod)
       onlyOwner
       external {
         minLockPeriod = _minLockPeriod;
-        minStake = _minStake;
       }
 
 }
