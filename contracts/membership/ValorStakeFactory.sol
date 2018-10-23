@@ -22,13 +22,15 @@ contract ValorStakeFactory is Ownable, Pausable{
 
     //the next line keeps records of any stake created by this factory
     //indexed by beneficiary
-    mapping (address => address[]) public stakesCreated;
+    mapping (address => address[]) internal stakesCreated;
 
     //event to emit at each creation of a new timelock contract
-    event StakeCreated(address indexed stake,
-                       address indexed beneficiary,
-                       uint256 lockPeriod,
-                       uint256 atStake);
+    event StakeCreated(
+        address indexed stake,
+        address indexed beneficiary,
+        uint256 lockPeriod,
+        uint256 atStake
+    );
 
 
     //event to emit if factory is dismissed
@@ -80,8 +82,18 @@ contract ValorStakeFactory is Ownable, Pausable{
     * @dev returns the num. of stakes created by an account
     * @param _beneficiary the account to get num. of stake created by this factory
     */
-    function getNumOfStakesByAddr(address _beneficiary) view external returns (uint256){
+    function countByBeneficiary(address _beneficiary) view external returns (uint256){
         return stakesCreated[_beneficiary].length;
     }
+
+    /**
+    * @dev returns stakes addresses created by _beneficiary
+    * @param _beneficiary the account for which we lookup stake 
+    * @param _index index to lookup stake address
+    */
+    function lookupByBeneficiary(address _beneficiary, uint256 _index) view external returns(address){
+        return stakesCreated[_beneficiary][_index];
+    }
+
 
 }

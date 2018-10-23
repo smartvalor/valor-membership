@@ -163,8 +163,8 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
     });
 
 
-    it.only("getNumOfStakesByAddr() == 0 if user did not create stakes", async () => {
-        let count = await this.factory.getNumOfStakesByAddr.call(someUser);
+    it("countByBeneficiary() == 0 if user did not create stakes", async () => {
+        let count = await this.factory.countByBeneficiary.call(someUser);
         console.log(count);
         count.toNumber().should.be.equal(0);
     });
@@ -181,7 +181,7 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
         .should.be.fulfilled;
 
 
-        let stakeAddr = await this.factory.stakesCreated.call(someUser,0);
+        let stakeAddr = await this.factory.lookupByBeneficiary.call(someUser,0);
 
         let stake = await ValorTimelock.at(stakeAddr);
 
@@ -224,13 +224,13 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
 
 
         //lets count how many stakes are created
-        let numSomeUser = await this.factory.getNumOfStakesByAddr.call(someUser);
+        let numSomeUser = await this.factory.countByBeneficiary.call(someUser);
         //test
         numSomeUser.should.be.bignumber.equal(3);
 
         //iterate over stake records and verify
         for(i=0; i< numSomeUser; i++){
-            let stakeAddr = await this.factory.stakesCreated.call(someUser,i);
+            let stakeAddr = await this.factory.lookupByBeneficiary.call(someUser,i);
             let stake = await ValorTimelock.at(stakeAddr);
             
             (await stake.beneficiary.call()).should.be.equal(someUser);
@@ -238,12 +238,12 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
         }
 
         //same of above, but for anotherUser
-        let numAnotherUser = await this.factory.getNumOfStakesByAddr.call(anotherUser);
+        let numAnotherUser = await this.factory.countByBeneficiary.call(anotherUser);
 
         numAnotherUser.should.be.bignumber.equal(2);
-        
+
         for(i=0; i< numAnotherUser; i++){
-            let stakeAddr = await this.factory.stakesCreated.call(anotherUser,i);
+            let stakeAddr = await this.factory.lookupByBeneficiary.call(anotherUser,i);
             let stake = await ValorTimelock.at(stakeAddr);
             console.log(stakeAddr);
             (await stake.beneficiary.call()).should.be.equal(anotherUser);
