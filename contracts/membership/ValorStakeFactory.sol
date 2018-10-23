@@ -66,6 +66,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     * @param _lockPeriod the duration of timelock in secs
     * @param _atStake the amount of tokens to be held
     */
+
     function createStake(uint32 _lockPeriod, uint256 _atStake)
       whenNotPaused external{
         require(!dismissed);
@@ -75,8 +76,20 @@ contract ValorStakeFactory is Ownable, Pausable{
         require(token.transferFrom(msg.sender, address(stake), _atStake));
         stakesCreated[msg.sender].push(address(stake));
         emit StakeCreated(address(stake), msg.sender, _lockPeriod, _atStake);
+
     }
 
+    /**
+    * @dev transfers the current VALOR balance to the owner.
+    * the factory is not supposed to receive/hold VALOR, however
+    * in case of mistakenly sent tokens, the owner can pull these tokens and make it available
+    * to external wallets.
+    */
+    function withdraw() public onlyOwner{
+        uint256 balance = token.balanceOf(address(this));
+        require(balance > 0);
+        require(token.transfer(owner, balance));
+    }
 
     /**
     * @dev transfers the current balance to the owner and terminates the factory.

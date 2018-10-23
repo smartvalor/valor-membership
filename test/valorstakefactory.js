@@ -292,6 +292,17 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
     });
 
 
+      it("no stake is created with lock period == 0", async () => {
+        //someUser approves 5000 VALOR allowance to factory
+        let N=5000;
+        await this.token.approve(this.factory.address, N * VALOR, {from:someUser});
+        await this.factory.createStake.sendTransaction( 0, 
+                                                        N * VALOR, 
+                                                        {from:someUser})
+        .should.be.rejected;
+    });  
+
+
     it("A ETH account can be beneficiary of more stakes", async () => {
         //someUser approves 5000 VALOR allowance to factory
         await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
@@ -305,6 +316,30 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
                                                         3000 * VALOR,
                                                         {from: someUser})
         .should.be.fulfilled;
+
+    });
+
+
+
+    it("Token sent to factory can be pulled out by (and only by) companyWallet", async () => {
+        //lets send some tokens to factory
+        await this.token.transfer(this.factory.address, 5000 * VALOR, {from:companyWallet});
+        //check new balance
+        (await this.token.balanceOf.call(this.factory.address)).should.be.bignumber.equal(5000 * VALOR);
+
+        //withdraw from some user is not allowed
+        await this.factory.withdraw({from: someUser}).should.be.rejected;
+
+        //check current balance of company
+        let ownerBalance=await this.token.balanceOf(companyWallet);
+
+        //company can pull out all VALOR
+        await this.factory.withdraw({from: companyWallet}).should.be.fulfilled;
+
+        //double check balances are as expected to be
+        (await this.token.balanceOf.call(this.factory.address)).should.be.bignumber.equal(0);
+
+        (await this.token.balanceOf.call(companyWallet)).should.be.bignumber.equal(ownerBalance.add(5000*VALOR));
 
     });
 
