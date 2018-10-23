@@ -42,7 +42,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     //event to emit if factory is dismissed
     event FactoryDismiss();
 
-    /**
+   /**
     * @dev it creates a new instance
     * @param _tokenAddress the address of token contract to be managed
     * @param _companyWallet the account who owns the factory
@@ -57,20 +57,20 @@ contract ValorStakeFactory is Ownable, Pausable{
         owner = _companyWallet;
 
         // setting up minimum values
-        minLockPeriod = 30 days * 6; // 6 months
+        minLockPeriod = 180 days; // around 6 months
         minStake = 250 * 1e18; // 250 ValorTokens
     }
 
-    /**
+   /**
     * @dev it creates a new timelock upon request
     * @param _lockPeriod the duration of timelock in secs
     * @param _atStake the amount of tokens to be held
     */
-
     function createStake(uint32 _lockPeriod, uint256 _atStake)
       whenNotPaused external{
         require(!dismissed);
-        require(_lockPeriod <= 365 days);
+        require(_lockPeriod <= 365 days && _lockPeriod >= minLockPeriod);
+        require(_atStake >= minStake );
 
         ValorTimelock stake = new ValorTimelock(token, msg.sender, owner, _lockPeriod);
         require(token.transferFrom(msg.sender, address(stake), _atStake));
@@ -79,7 +79,7 @@ contract ValorStakeFactory is Ownable, Pausable{
 
     }
 
-    /**
+   /**
     * @dev transfers the current VALOR balance to the owner.
     * the factory is not supposed to receive/hold VALOR, however
     * in case of mistakenly sent tokens, the owner can pull these tokens and make it available
@@ -91,8 +91,8 @@ contract ValorStakeFactory is Ownable, Pausable{
         require(token.transfer(owner, balance));
     }
 
-    /**
-    * @dev transfers the current balance to the owner and terminates the factory.
+   /**
+    * @dev dismiss the factory.
     */
     function dismiss()
       onlyOwner external {
@@ -101,34 +101,33 @@ contract ValorStakeFactory is Ownable, Pausable{
         emit FactoryDismiss();        
     }
 
-    /**
-    * @dev returns the num. of stakes created by an account
-    * @param _beneficiary the account to get num. of stake created by this factory
+
+   /**
+    * @dev we allow the owner to set up new min value for Stake
+    * @param _minStake the new min stake
+    */
+    function setMinStake(uint256 _minStake) onlyOwner external {
+        minStake = _minStake;
+    }
+
+   /**
+    * @dev we allow the owner to set up new min locking period
+    * @param _minLockPeriod the new minLockPeriod
+    */
+    function setMinLockPeriod(uint32 _minLockPeriod) onlyOwner external {
+        minLockPeriod = _minLockPeriod;
+    }
+
+   /**
+    * @dev returns the num of stakes created per beneficiary
+    * @param _beneficiary the account to get num of stake created by means of this factory
     */
     function countByBeneficiary(address _beneficiary) view external returns (uint256){
         return stakesCreated[_beneficiary].length;
     }
 
-    /**
 
-    * @dev we allow the owner to set up new min value for Stake
-    */
-    function setMinStake(uint256 _minStake)
-      onlyOwner
-      external {
-        minStake = _minStake;
-      }
-
-    /**
-    * @dev we allow the owner to set up new min value for LockPeriod
-    */
-    function setMinLockPeriod(uint32 _minLockPeriod)
-      onlyOwner
-      external {
-        minLockPeriod = _minLockPeriod;
-      }
-
-
+   /**
     * @dev returns stakes addresses created by _beneficiary
     * @param _beneficiary the account for which we lookup stake 
     * @param _index index to lookup stake address

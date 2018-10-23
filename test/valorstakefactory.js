@@ -344,6 +344,56 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
     });
 
 
+    it("Can create a stake with (but not less) than minStake", async () => {
+        let minStake = await this.factory.minStake();
+        let minLockPeriod = await this.factory.minLockPeriod();
+        console.log(minStake.toNumber());
+        await this.token.approve(this.factory.address, minStake.toNumber(), {from:someUser});
+        await this.factory.createStake(minLockPeriod, minStake.minus(1) ,{from: someUser}).should.be.rejected;
+        await this.factory.createStake(minLockPeriod, minStake ,{from: someUser}).should.be.fulfilled;
+
+    });
+
+    it("Can create a stake with (but not less) than minLockPeriod", async () => {
+        let minStake = await this.factory.minStake();
+        let minLockPeriod = await this.factory.minLockPeriod();
+
+        await this.token.approve(this.factory.address, minStake.toNumber(), {from:someUser});
+        await this.factory.createStake(minLockPeriod.minus(1),minStake ,{from: someUser}).should.be.rejected;
+        await this.factory.createStake(minLockPeriod, minStake ,{from: someUser}).should.be.fulfilled;
+
+    });    
+
+    it("Change minLockPeriod and verify ", async () => {
+        let minStake = await this.factory.minStake();
+        await this.factory.setMinLockPeriod(120 * day,{from: companyWallet});
+        (await this.factory.minLockPeriod()).toNumber().should.be.equal(120*day);
+
+        await this.token.approve(this.factory.address, 500*VALOR, {from:someUser});
+        await this.factory.createStake(119*day, minStake,{from: someUser}).should.be.rejected;
+        await this.factory.createStake(120*day, minStake,{from: someUser}).should.be.fulfilled;
+    });
+
+    it("Change minStake and verify ", async () => {
+        let minLockPeriod = await this.factory.minLockPeriod();
+        await this.factory.setMinStake(1000*VALOR,{from: companyWallet});
+
+        (await this.factory.minStake()).toNumber().should.be.equal(1000*VALOR);
+
+        await this.token.approve(this.factory.address, 5000*VALOR, {from:someUser});
+        await this.factory.createStake(minLockPeriod, 999*VALOR,{from: someUser}).should.be.rejected;
+        await this.factory.createStake(minLockPeriod, 1000*VALOR,{from: someUser}).should.be.fulfilled;
+        await this.factory.createStake(minLockPeriod, 1001*VALOR,{from: someUser}).should.be.fulfilled;
+
+    });
+
+    it("Change minStake and/or minLockPeriod are restricted to companyWallet(owner) ", async () => {
+        await this.factory.setMinStake(1000*VALOR,{from: someUser}).should.be.rejected;
+        await this.factory.setMinLockPeriod(12*day,{from: someUser}).should.be.rejected;
+
+    });
+
+
     it("measuring gas", async () => {
         //someUser approves 5000 VALOR allowance to factory
         console.log("approve");
@@ -365,30 +415,5 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
 
     });
 
-    it("Mininum values for LockPeriod and Stake conditions are validated ", async () => {
-        // we get the current minimum values for both LockPeriod and atStake
-        let minLockPeriod = await this.factory.minLockPeriod();
-        let minStake = await this.factory.minStake();
 
-        // we make sure we can create a stake if we deploy with the minimum values
-        await this.token.approve(this.factory.address, minStake, {from:someUser});
-        await this.factory.createStake(minLockPeriod, minStake,{from: someUser}).should.be.fulfilled;
-
-        // we make sure we can't deploy if we are under the minimum values
-        await this.token.approve(this.factory.address, minStake, {from:someUser});
-        await this.factory.createStake( minLockPeriod - (1 * month), minStake,{from: someUser}).should.be.rejected;
-        await this.factory.createStake( minLockPeriod, minStake - (1*VALOR),{from: someUser}).should.be.rejected;
-        await this.factory.createStake( 366 * day, minStake,{from: someUser}).should.be.rejected;
-
-        // we increase the minimum values to new ones
-        await this.factory.setMinLockPeriod(minLockPeriod + (1 * month),{from: companyWallet});
-         await this.factory.setMinStake(minStake + (250 * VALOR),{from: companyWallet});
-
-        // and validate that we can no longer create a stake with original values
-        await this.token.approve(this.factory.address, 500*VALOR, {from:someUser});
-        await this.factory.createStake(minLockPeriod, minStake,{from: someUser}).should.be.rejected;
-
-        await this.factory.createStake(minLockPeriod + (1 * month), minStake + (250 * VALOR),{from: someUser}).should.be.rejected;
-
-    });
 });
