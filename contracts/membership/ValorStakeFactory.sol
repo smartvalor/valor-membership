@@ -13,7 +13,7 @@ import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 contract ValorStakeFactory is Ownable, Pausable{
 
     // minimum time lock period we request to create stake
-    uint256 public minLockPeriod;
+    uint32 public minLockPeriod;
     // minimum amount of tokens we request to create stake
     uint256 public minStake;
 
@@ -23,7 +23,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     //event to emit at each creation of a new timelock contract
     event StakeCreated(address indexed stake,
                        address indexed beneficiary,
-                       uint256 lockPeriod,
+                       uint32 lockPeriod,
                        uint256 atStake);
 
 
@@ -54,7 +54,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     * @param _lockPeriod the duration of timelock in secs
     * @param _atStake the amount of tokens to be held
     */
-    function createStake(uint256 _lockPeriod, uint256 _atStake)
+    function createStake(uint32 _lockPeriod, uint256 _atStake)
       whenNotPaused external{
         require(_lockPeriod <= 365 days && _lockPeriod >= minLockPeriod);
         require(_atStake >= minStake );
@@ -77,7 +77,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     /**
     * @dev we allow the owner to set up new min values for LockPeriod and atStake.
     */
-    function setMinCreateStakeValues(uint256 _minLockPeriod, uint256 _minStake)
+    function setMinCreateStakeValues(uint32 _minLockPeriod, uint256 _minStake)
       onlyOwner
       external {
         minLockPeriod = _minLockPeriod;
