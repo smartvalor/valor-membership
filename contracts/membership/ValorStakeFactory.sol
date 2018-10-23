@@ -85,7 +85,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     * in case of mistakenly sent tokens, the owner can pull these tokens and make it available
     * to external wallets.
     */
-    function withdraw() public onlyOwner{
+    function withdraw() external onlyOwner{
         uint256 balance = token.balanceOf(address(this));
         require(balance > 0);
         require(token.transfer(owner, balance));
