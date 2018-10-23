@@ -75,6 +75,23 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
 
     });
 
+   it("dismissed factory emits event", async () => {
+    let event = this.factory.FactoryDismiss();
+    let factoryAddress = this.factory.address;
+
+    event.watch(function(err,evt){
+        console.log(evt);
+        console.log(evt["address"]);
+        evt["address"].should.be.equal(factoryAddress);
+        evt["event"].should.be.equal("FactoryDismiss");
+
+    });    
+     //console.log("test");
+    await this.factory.dismiss.sendTransaction({from:companyWallet}).should.be.fulfilled;
+
+    });
+
+
     it("factory is built with proper parameters", async () => {
      //console.log("test");
      (await this.factory.token.call()).should.be.equal(this.token.address);

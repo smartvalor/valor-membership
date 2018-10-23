@@ -27,6 +27,9 @@ contract ValorStakeFactory is Ownable, Pausable{
                        uint256 atStake);
 
 
+    //event to emit if factory is dismissed
+    event FactoryDismiss();
+
     /**
     * @dev it creates a new instance
     * @param _tokenAddress the address of token contract to be managed
@@ -67,6 +70,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     */
     function dismiss()
       onlyOwner external {
+        emit FactoryDismiss();
         selfdestruct(owner);
     }
 
