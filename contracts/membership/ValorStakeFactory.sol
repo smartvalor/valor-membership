@@ -15,6 +15,15 @@ contract ValorStakeFactory is Ownable, Pausable{
     //the token managed by this factory
     ERC20 public token;
 
+    //dismissed == false during life of factory
+    //once a factory is dismissed it cannot be resumed
+    //a dismissed factory cannot create stakes
+    bool public dismissed = false;
+
+    //the next line keeps records of any stake created by this factory
+    //indexed by beneficiary
+    mapping (address => address[]) public stakesCreated;
+
     //event to emit at each creation of a new timelock contract
     event StakeCreated(address indexed stake,
                        address indexed beneficiary,
@@ -47,10 +56,12 @@ contract ValorStakeFactory is Ownable, Pausable{
     */
     function createStake(uint256 _lockPeriod, uint256 _atStake)
       whenNotPaused external{
+        require(!dismissed);
         require(_lockPeriod <= 365 days);
 
         ValorTimelock stake = new ValorTimelock(token, msg.sender, owner, _lockPeriod);
         require(token.transferFrom(msg.sender, address(stake), _atStake));
+        stakesCreated[msg.sender].push(address(stake));
         emit StakeCreated(address(stake), msg.sender, _lockPeriod, _atStake);
     }
 
@@ -60,8 +71,17 @@ contract ValorStakeFactory is Ownable, Pausable{
     */
     function dismiss()
       onlyOwner external {
-        emit FactoryDismiss();
-        selfdestruct(owner);
+        //this is non revocable state
+        dismissed = true;
+        emit FactoryDismiss();        
+    }
+
+    /**
+    * @dev returns the num. of stakes created by an account
+    * @param _beneficiary the account to get num. of stake created by this factory
+    */
+    function getNumOfStakesByAddr(address _beneficiary) view external returns (uint256){
+        return stakesCreated[_beneficiary].length;
     }
 
 }
