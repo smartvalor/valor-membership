@@ -15,7 +15,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     // minimum time lock period we request to create stake
     uint256 public minLockPeriod;
     // minimum amount of tokens we request to create stake
-    uint256 public minAtStake;
+    uint256 public minStake;
 
     //the token managed by this factory
     ERC20 public token;
@@ -46,7 +46,7 @@ contract ValorStakeFactory is Ownable, Pausable{
 
         // setting up minimum values
         minLockPeriod = 30 days * 6; // 6 months
-        minAtStake = 250 * 1e18; // 250 ValorTokens
+        minStake = 250 * 1e18; // 250 ValorTokens
     }
 
     /**
@@ -57,7 +57,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     function createStake(uint256 _lockPeriod, uint256 _atStake)
       whenNotPaused external{
         require(_lockPeriod <= 365 days && _lockPeriod >= minLockPeriod);
-        require(_atStake >= minAtStake );
+        require(_atStake >= minStake );
 
         ValorTimelock stake = new ValorTimelock(token, msg.sender, owner, _lockPeriod);
         require(token.transferFrom(msg.sender, address(stake), _atStake));
@@ -77,11 +77,11 @@ contract ValorStakeFactory is Ownable, Pausable{
     /**
     * @dev we allow the owner to set up new min values for LockPeriod and atStake.
     */
-    function setMinCreateStakeValues(uint256 _minLockPeriod, uint256 _minAtStake)
+    function setMinCreateStakeValues(uint256 _minLockPeriod, uint256 _minStake)
       onlyOwner
       external {
         minLockPeriod = _minLockPeriod;
-        minAtStake = _minAtStake;
+        minStake = _minStake;
       }
 
 }
