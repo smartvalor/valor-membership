@@ -6,7 +6,8 @@
 var util = require ("./util.js");
 var BigNumber      = util.BigNumber;
 
-const day = 86400; 
+const day = 86400;
+const month = 30 * day;
 
 const ValorTokenMockup = artifacts.require('./mocks/ValorTokenMockup.sol');
 const ValorTimelock = artifacts.require("./ValorTimelock.sol");
@@ -43,7 +44,7 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
      //console.log("test");
      await this.factory.pause.sendTransaction({from:anotherUser}).should.be.rejected;
      await this.factory.dismiss.sendTransaction({from:anotherUser}).should.be.rejected;
- 
+
     });
 
     it("paused factory won't accept any create stake request", async () => {
@@ -53,11 +54,11 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
      //someUser preapproves 5000 VALOR allowance to factory
      await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
      //simulate a create stake from someUser
-     await this.factory.createStake.sendTransaction( 1 * day, 
-                                                     5000 * VALOR, 
+     await this.factory.createStake.sendTransaction( 6 * month,
+                                                     5000 * VALOR,
                                                      {from: someUser}).should.be.rejected;
 
- 
+
     });
 
    it("dismissed factory won't accept any create stake request", async () => {
@@ -67,11 +68,11 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
      //someUser preapproves 5000 VALOR allowance to factory
      await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
      //simulate a create stake from someUser
-     await this.factory.createStake.sendTransaction( 1 * day, 
-                                                     5000 * VALOR, 
+     await this.factory.createStake.sendTransaction( 6 * month,
+                                                     5000 * VALOR,
                                                      {from: someUser}).should.be.rejected;
 
- 
+
     });
 
    it("dismissed factory emits event", async () => {
@@ -84,7 +85,7 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
         evt["address"].should.be.equal(factoryAddress);
         evt["event"].should.be.equal("FactoryDismiss");
 
-    });    
+    });
      //console.log("test");
     await this.factory.dismiss.sendTransaction({from:companyWallet}).should.be.fulfilled;
 
@@ -110,16 +111,16 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
 
      //someUser approves 5000 VALOR allowance to factory
      await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
-         
-     let tx = await this.factory.createStake.sendTransaction(   1 * day, 
-                                                                5000 * VALOR, 
+
+     let tx = await this.factory.createStake.sendTransaction(   6 * month,
+                                                                5000 * VALOR,
                                                                 {from: someUser});
 
 
-     let deployTime  = await util.latestTime(); 
+     let deployTime  = await util.latestTime();
 
      let eventClass = this.factory.StakeCreated();
-     
+
      var stakeAddr;
      var atStake;
 
@@ -127,7 +128,7 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
     function watchEvent(evt){
         return new Promise(function(resolve,reject){
             evt.watch(function(err,res){
-                resolve({stake: res.args.stake, 
+                resolve({stake: res.args.stake,
                          atStake: res.args.atStake,
                          beneficiary: res.args.beneficiary,
                          lockPeriod: res.args.lockPeriod});
@@ -138,7 +139,7 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
 
     var evt = await watchEvent(eventClass);
 
-    
+
 
     let stake = await ValorTimelock.at(evt['stake']);
 
@@ -151,8 +152,8 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
     evt.atStake.should.be.bignumber.equal(amountStaked);
 
     let releaseTime = await stake.releaseTime.call();
-    releaseTime.should.be.bignumber.equal(deployTime + 1*day);
-    evt.lockPeriod.should.be.bignumber.equal(1*day);
+    releaseTime.should.be.bignumber.equal(deployTime + 6*month);
+    evt.lockPeriod.should.be.bignumber.equal(6*month);
 
     let owner = await stake.owner.call();
     owner.should.be.equal(companyWallet);
@@ -261,8 +262,8 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
 
         //another user tries to create stake with arbitrary timelock
         await this.factory.createStake.sendTransaction(someUser,
-                                                        100000 * day, 
-                                                        5000 * VALOR, 
+                                                        100000 * day,
+                                                        5000 * VALOR,
                                                         {from: anotherUser})
         .should.be.rejected;
     });
@@ -273,35 +274,35 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
         //someUser approves 5000 VALOR allowance to factory
         let N=5000;
         await this.token.approve(this.factory.address, (N-1) * VALOR, {from:someUser});
-        await this.factory.createStake.sendTransaction( 1 * day, 
-                                                        N * VALOR, 
+        await this.factory.createStake.sendTransaction( 1 * day,
+                                                        N * VALOR,
                                                         {from:someUser})
         .should.be.rejected;
-    });    
+    });
 
 
    it("no stake is created with more than 365 days of timelock", async () => {
         //someUser approves 5000 VALOR allowance to factory
         let N=5000;
         await this.token.approve(this.factory.address, N * VALOR, {from:someUser});
-        await this.factory.createStake.sendTransaction( 366 * day, 
-                                                        N * VALOR, 
+        await this.factory.createStake.sendTransaction( 366 * day,
+                                                        N * VALOR,
                                                         {from:someUser})
         .should.be.rejected;
-    });  
+    });
 
 
     it("A ETH account can be beneficiary of more stakes", async () => {
         //someUser approves 5000 VALOR allowance to factory
         await this.token.approve(this.factory.address, 5000 * VALOR, {from:someUser});
 
-        await this.factory.createStake.sendTransaction( 1 * day, 
-                                                        2000 * VALOR, 
+        await this.factory.createStake.sendTransaction( 6 * month,
+                                                        2000 * VALOR,
                                                         {from: someUser})
         .should.be.fulfilled;
 
-        await this.factory.createStake.sendTransaction( 10 * day, 
-                                                        3000 * VALOR, 
+        await this.factory.createStake.sendTransaction( 6 * month,
+                                                        3000 * VALOR,
                                                         {from: someUser})
         .should.be.fulfilled;
 
@@ -315,8 +316,8 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
         console.log("gas used:"+tx.receipt.gasUsed);
 
         console.log("create stake");
-        tx = await this.factory.createStake( 1 * day, 
-                                             5000 * VALOR, 
+        tx = await this.factory.createStake( 6 * month,
+                                             5000 * VALOR,
                                              {from: someUser});
 
         console.log("gas used:"+tx.receipt.gasUsed);
@@ -329,7 +330,30 @@ contract('ValorStakeFactory', async ([deployer,companyWallet,someUser,anotherUse
 
     });
 
+    it("Mininum values for LockPeriod and Stake conditions are validated ", async () => {
+        // we get the current minimum values for both LockPeriod and atStake
+        let minLockPeriod = await this.factory.minLockPeriod();
+        let minStake = await this.factory.minStake();
 
+        // we make sure we can create a stake if we deploy with the minimum values
+        await this.token.approve(this.factory.address, minStake, {from:someUser});
+        await this.factory.createStake(minLockPeriod, minStake,{from: someUser}).should.be.fulfilled;
 
+        // we make sure we can't deploy if we are under the minimum values
+        await this.token.approve(this.factory.address, minStake, {from:someUser});
+        await this.factory.createStake( minLockPeriod - (1 * month), minStake,{from: someUser}).should.be.rejected;
+        await this.factory.createStake( minLockPeriod, minStake - (1*VALOR),{from: someUser}).should.be.rejected;
+        await this.factory.createStake( 366 * day, minStake,{from: someUser}).should.be.rejected;
 
+        // we increase the minimum values to new ones
+        await this.factory.setMinLockPeriod(minLockPeriod + (1 * month),{from: companyWallet});
+         await this.factory.setMinStake(minStake + (250 * VALOR),{from: companyWallet});
+
+        // and validate that we can no longer create a stake with original values
+        await this.token.approve(this.factory.address, 500*VALOR, {from:someUser});
+        await this.factory.createStake(minLockPeriod, minStake,{from: someUser}).should.be.rejected;
+
+        await this.factory.createStake(minLockPeriod + (1 * month), minStake + (250 * VALOR),{from: someUser}).should.be.rejected;
+
+    });
 });

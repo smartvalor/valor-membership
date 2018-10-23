@@ -12,6 +12,11 @@ import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
  */
 contract ValorStakeFactory is Ownable, Pausable{
 
+    // minimum time lock period we request to create stake
+    uint32 public minLockPeriod;
+    // minimum amount of tokens we request to create stake
+    uint256 public minStake;
+
     //the token managed by this factory
     ERC20 public token;
 
@@ -33,6 +38,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     );
 
 
+
     //event to emit if factory is dismissed
     event FactoryDismiss();
 
@@ -49,6 +55,10 @@ contract ValorStakeFactory is Ownable, Pausable{
         require(_tokenAddress != _companyWallet);
         token = ERC20(_tokenAddress);
         owner = _companyWallet;
+
+        // setting up minimum values
+        minLockPeriod = 30 days * 6; // 6 months
+        minStake = 250 * 1e18; // 250 ValorTokens
     }
 
     /**
@@ -56,7 +66,7 @@ contract ValorStakeFactory is Ownable, Pausable{
     * @param _lockPeriod the duration of timelock in secs
     * @param _atStake the amount of tokens to be held
     */
-    function createStake(uint256 _lockPeriod, uint256 _atStake)
+    function createStake(uint32 _lockPeriod, uint256 _atStake)
       whenNotPaused external{
         require(!dismissed);
         require(_lockPeriod <= 365 days);
@@ -87,6 +97,25 @@ contract ValorStakeFactory is Ownable, Pausable{
     }
 
     /**
+
+    * @dev we allow the owner to set up new min value for Stake
+    */
+    function setMinStake(uint256 _minStake)
+      onlyOwner
+      external {
+        minStake = _minStake;
+      }
+
+    /**
+    * @dev we allow the owner to set up new min value for LockPeriod
+    */
+    function setMinLockPeriod(uint32 _minLockPeriod)
+      onlyOwner
+      external {
+        minLockPeriod = _minLockPeriod;
+      }
+
+
     * @dev returns stakes addresses created by _beneficiary
     * @param _beneficiary the account for which we lookup stake 
     * @param _index index to lookup stake address
@@ -94,6 +123,5 @@ contract ValorStakeFactory is Ownable, Pausable{
     function lookupByBeneficiary(address _beneficiary, uint256 _index) view external returns(address){
         return stakesCreated[_beneficiary][_index];
     }
-
 
 }

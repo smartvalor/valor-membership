@@ -13,8 +13,8 @@ contract ValorTimelock{
 
 
     event EmergencyRelease(
-        address from, 
-        address to, 
+        address from,
+        address to,
         uint256 value
     );
 
@@ -62,7 +62,7 @@ contract ValorTimelock{
         //restrict this tx to the legit beneficiary only
         require(msg.sender == beneficiary);
 
-        //check time is done       
+        //check time is done
         //according to 15sec rule, this contract can tolerate a drift of 15sec
         //so that the use of block.timestamp can be considered safe
         require(block.timestamp >= releaseTime);
