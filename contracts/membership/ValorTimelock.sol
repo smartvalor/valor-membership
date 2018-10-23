@@ -1,18 +1,22 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
- 
+
 /**
  * @title ValorTimelock
  * @dev ValorTimelock is a VALOR token holder contract that will allow a
- * beneficiary to extract the tokens after a given release time and includes an 
+ * beneficiary to extract the tokens after a given release time and includes an
  * emergency exit mechanism which can be activated by owner (Smart Valor) to immediately
  * recover funds towards beneficiary
  */
 contract ValorTimelock{
 
 
-    event EmergencyRelease(address from, address to, uint256 value);
+    event EmergencyRelease(
+        address from,
+        address to,
+        uint256 value
+    );
 
     // ERC20 basic token contract being held
     ERC20 public token;
@@ -31,13 +35,13 @@ contract ValorTimelock{
      * @param _token the token managed by this contract
      * @param _beneficiary the address which will receive the locked funds at due time
      * @param _admin the account which can activate the emergency release
-     * @param duration locking period in secs 
+     * @param _duration locking period in secs
      */
-    constructor(ERC20 _token, address _beneficiary, address _admin, uint256 duration )
+    constructor(ERC20 _token, address _beneficiary, address _admin, uint256 _duration )
     public {
         token = _token;
         beneficiary = _beneficiary;
-        releaseTime = block.timestamp + duration;//watchout, no safe math
+        releaseTime = block.timestamp + _duration;//watchout, no safe math
         owner = _admin;
     }
 
@@ -45,38 +49,41 @@ contract ValorTimelock{
     /**
     * @dev it releases all tokens held by this contract to beneficiary.
     */
-    function release() public {
+    function release() external {
         uint256 balance = token.balanceOf(address(this));
         partialRelease(balance);
     }
 
     /**
     * @dev it releases some tokens held by this contract to beneficiary.
-    * @param amount the number of tokens to be sent to beneficiary
+    * @param _amount the number of tokens to be sent to beneficiary
     */
-    function partialRelease(uint256 amount) public {
+    function partialRelease(uint256 _amount) public {
         //restrict this tx to the legit beneficiary only
         require(msg.sender == beneficiary);
-        //check time is done
-        require(block.timestamp >= releaseTime);
-        
-        uint256 balance = token.balanceOf(address(this));
-        require(balance >= amount);
-        require(amount > 0);
 
-        token.transfer(beneficiary, amount);
+        //check time is done
+        //according to 15sec rule, this contract can tolerate a drift of 15sec
+        //so that the use of block.timestamp can be considered safe
+        require(block.timestamp >= releaseTime);
+
+        uint256 balance = token.balanceOf(address(this));
+        require(balance >= _amount);
+        require(_amount > 0);
+
+        require(token.transfer(beneficiary, _amount));
     }
 
 
     /**
-    * @dev it releases all tokens held by this contract to beneficiary. This 
+    * @dev it releases all tokens held by this contract to beneficiary. This
     * can be used by owner only and it works anytime
     */
-    function emergencyRelease() public{
+    function emergencyRelease() external{
         require(msg.sender == owner);
         uint256 amount = token.balanceOf(address(this));
         require(amount > 0);
-        token.transfer(beneficiary, amount);
+        require(token.transfer(beneficiary, amount));
         emit EmergencyRelease(msg.sender, beneficiary, amount);
     }
 
