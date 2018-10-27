@@ -1,7 +1,7 @@
 # ValorNetwork
 
-This repository will host smart contract and protocol specifications related to Smart Valor platform
-Currently it is hosting the membership stakes timelocked contract only under folder
+This repository will host smart contracts related to Smart Valor memberships
+Currently it is hosting the stakes timelocked contract under folder
 
 ```
 contracts/membership
