@@ -59,8 +59,6 @@ contract ValorTimelock{
     * @param _amount the number of tokens to be sent to beneficiary
     */
     function partialRelease(uint256 _amount) public {
-        //restrict this tx to the legit beneficiary only
-        require(msg.sender == beneficiary);
 
         //check time is done
         //according to 15sec rule, this contract can tolerate a drift of 15sec

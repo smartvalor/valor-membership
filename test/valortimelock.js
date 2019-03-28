@@ -65,6 +65,15 @@ contract('ValorTimelock', async ([admin,beneficiary,anotherUser]) => {
   });
 
 
+  it("after release time the tokens can be unlocked by anyone but only beneficiary will receive them", async () => {
+    await time.increaseTo(this.releaseTime);
+    await this.timelock.release.sendTransaction({from: anotherUser}).should.be.fulfilled;
+    (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(new BN(0));
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(holdings);
+  });
+
+
+
   it("admin can trigger emergencyrelease anytime, tokens go to beneficiary", async () => {
     (await time.latest()).should.be.bignumber.below(this.releaseTime);
     await this.timelock.emergencyRelease.sendTransaction({from: admin}).should.be.fulfilled;
@@ -122,16 +131,18 @@ contract('ValorTimelock', async ([admin,beneficiary,anotherUser]) => {
 
   });
 
-  it("after release time, ONLY the legit user can pull a fraction of the funds", async () => {
+  it("after release time, anyone can trigger partialRelease(), the legit user will get a fraction of the funds", async () => {
     await time.increaseTo(this.releaseTime);
     const reimbursement = new BN(100).mul(VALOR);
-    await this.timelock.partialRelease.sendTransaction(reimbursement, {from: anotherUser}).should.be.rejected;
-    await this.timelock.partialRelease.sendTransaction(reimbursement, {from:    beneficiary}).should.be.fulfilled;
+    await this.timelock.partialRelease.sendTransaction(reimbursement, {from: anotherUser}).should.be.fulfilled;
   });
 
   it("after release time, the admin can still use emergencyRelease to all of the funds", async () => {
     await time.increaseTo(this.releaseTime);
     await this.timelock.emergencyRelease.sendTransaction({from: admin}).should.be.fulfilled;
   });
+
+
+
 
 });
