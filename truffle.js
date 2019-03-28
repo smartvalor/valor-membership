@@ -14,12 +14,18 @@
 
 
 module.exports = {
-    solc: {
-        optimizer: {
+
+    compilers: {
+      solc: {
+        version: "0.4.25", // A version or constraint - Ex. "^0.5.0"
+          optimizer: {
             enabled: true,
-            runs: 1
+            runs: 200   // Optimize for how many times you intend to run the code
+          }          
         }
-    },
+      },
+
+
     networks: {
         development: {
             host: "localhost",
