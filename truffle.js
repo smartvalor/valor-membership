@@ -14,12 +14,18 @@
 
 
 module.exports = {
-    solc: {
-        optimizer: {
+
+    compilers: {
+      solc: {
+        version: "0.4.25", // A version or constraint - Ex. "^0.5.0"
+          optimizer: {
             enabled: true,
-            runs: 1
+            runs: 200   // Optimize for how many times you intend to run the code
+          }          
         }
-    },
+      },
+
+
     networks: {
         development: {
             host: "localhost",
@@ -49,17 +55,6 @@ module.exports = {
             port: 8555,
             gas: 0xfffffffffff,
             gasPrice: 0x01
-        },
-        devbc: {
-            network_id: "98052",
-            from: "0x710576f743f73d5049cf2870eee806f18077cbd8",
-            provider: function () {
-                const WalletProvider = require("truffle-wallet-provider");
-                const privateKeyString = "0x1c59a305fd7a43dd321a93cdd0fb0c9f78bf62523b6e4c72d0d409a006d26717";
-                const privateKeyBuffer = require('ethereumjs-util').toBuffer(privateKeyString);
-                const wallet = require('ethereumjs-wallet').fromPrivateKey(privateKeyBuffer);
-                return new WalletProvider(wallet, "http://dev-bc-ethereum-geth-tx.default:8545")
-            }
         }
     }
 };
