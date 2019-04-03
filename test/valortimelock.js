@@ -81,6 +81,41 @@ contract('ValorTimelock', async ([admin,beneficiary,anotherUser]) => {
     (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(holdings);
   });
 
+
+  it("emergencyrelease fails if timelock is empty", async () => {
+    (await time.latest()).should.be.bignumber.below(this.releaseTime);
+    await this.timelock.emergencyRelease.sendTransaction({from: admin}).should.be.fulfilled;
+    (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(new BN(0));
+    // at this point timelock balance is zero.
+
+    (await time.latest()).should.be.bignumber.below(this.releaseTime);
+    await this.timelock.emergencyRelease.sendTransaction({from: admin}).should.be.rejected;
+
+
+  });
+
+
+  it("admin can trigger emergencyrelease multiple times if funds are refilled", async () => {
+    (await time.latest()).should.be.bignumber.below(this.releaseTime);
+    await this.timelock.emergencyRelease.sendTransaction({from: admin}).should.be.fulfilled;
+    (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(new BN(0));
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(holdings);
+
+    console.log("refilling ...");
+
+    //put some tokens in the timelocked fund
+    await this.token.transfer(this.timelock.address,holdings, {from: beneficiary});
+    (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(holdings);
+
+    console.log("re-emergency call ..."); 
+    (await time.latest()).should.be.bignumber.below(this.releaseTime);
+    await this.timelock.emergencyRelease.sendTransaction({from: admin}).should.be.fulfilled;
+    (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(new BN(0));
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(holdings);
+
+  });
+
+
  it("tokens cannot be released by anyone before releaseTime", async () => {
     (await time.latest()).should.be.bignumber.below(this.releaseTime);
     await this.timelock.release.sendTransaction({from: beneficiary}).should.be.rejected;
