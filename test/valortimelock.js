@@ -1,8 +1,3 @@
-//not nice import, useful to have some helper functions available
-//especially .shoud.be.rejected interface
-//waiting for open-zeppelin helpers.js to remove babel dependencies
-
-//var util = require ("./util.js");
 
 const {time} = require('openzeppelin-test-helpers');
 
@@ -59,6 +54,7 @@ contract('ValorTimelock', async ([admin,beneficiary,anotherUser]) => {
 
   it("after release time the tokens can be unlocked by beneficiary", async () => {
     await time.increaseTo(this.releaseTime);
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(new BN(0));
     await this.timelock.release.sendTransaction({from: beneficiary}).should.be.fulfilled;
     (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(new BN(0));
     (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(holdings);
@@ -67,6 +63,7 @@ contract('ValorTimelock', async ([admin,beneficiary,anotherUser]) => {
 
   it("after release time the tokens can be unlocked by anyone but only beneficiary will receive them", async () => {
     await time.increaseTo(this.releaseTime);
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(new BN(0));
     await this.timelock.release.sendTransaction({from: anotherUser}).should.be.fulfilled;
     (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(new BN(0));
     (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(holdings);
@@ -76,6 +73,7 @@ contract('ValorTimelock', async ([admin,beneficiary,anotherUser]) => {
 
   it("admin can trigger emergencyrelease anytime, tokens go to beneficiary", async () => {
     (await time.latest()).should.be.bignumber.below(this.releaseTime);
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(new BN(0));
     await this.timelock.emergencyRelease.sendTransaction({from: admin}).should.be.fulfilled;
     (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(new BN(0));
     (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(holdings);
@@ -135,6 +133,7 @@ contract('ValorTimelock', async ([admin,beneficiary,anotherUser]) => {
   it("after release time the beneficiary can pull a fraction of the funds", async () => {
     await time.increaseTo(this.releaseTime);
     const reimbursement = new BN(1000).mul(VALOR);
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(new BN(0));
     await this.timelock.partialRelease.sendTransaction(reimbursement,{from: beneficiary}).should.be.fulfilled;
     (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(holdings.sub(reimbursement));
     (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(reimbursement);    
@@ -169,12 +168,19 @@ contract('ValorTimelock', async ([admin,beneficiary,anotherUser]) => {
   it("after release time, anyone can trigger partialRelease(), the legit user will get a fraction of the funds", async () => {
     await time.increaseTo(this.releaseTime);
     const reimbursement = new BN(100).mul(VALOR);
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(new BN(0));
     await this.timelock.partialRelease.sendTransaction(reimbursement, {from: anotherUser}).should.be.fulfilled;
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(reimbursement);
+    (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(holdings.sub(reimbursement));    
   });
 
   it("after release time, the admin can still use emergencyRelease to all of the funds", async () => {
     await time.increaseTo(this.releaseTime);
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(new BN(0));
     await this.timelock.emergencyRelease.sendTransaction({from: admin}).should.be.fulfilled;
+    (await this.token.balanceOf(beneficiary)).should.be.bignumber.equal(holdings);
+    (await this.token.balanceOf(this.timelock.address)).should.be.bignumber.equal(new BN(0));    
+
   });
 
 
