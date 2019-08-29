@@ -9,6 +9,10 @@ contracts/membership
 and testcases accordingly
 
 
+# Note 
+Remove this note once merged on master.
+
+This branch is about scripts and migration used for the deploy of the timelock used by the company to freeze 80e6 VALOR from March to September 2019.
 
 # Prerequisites
 

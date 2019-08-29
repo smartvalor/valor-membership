@@ -49,6 +49,17 @@ module.exports = {
             gas: 4500000,
             gasPrice: 100e9,
         },
+        mainnet: {
+            provider: function() {
+                const HDWalletProvider=require('truffle-hdwallet-provider');
+                const INFURA_KEY="your key";
+                const mnemonic  = "your seed";
+                return new HDWalletProvider(mnemonic, 'https://mainnet.infura.io/v3/'+INFURA_KEY);
+            },
+            network_id: '1',
+            gas: 4500000,
+            gasPrice: 10e9,
+        },    
         coverage: {
             host: "127.0.0.1",
             network_id: "*",

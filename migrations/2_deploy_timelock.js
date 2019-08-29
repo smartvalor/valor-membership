@@ -15,9 +15,9 @@ module.exports = function(deployer,network,accounts) {
   }
   if(network == "mainnet"){
     const tokenAddr    = "0x297E4e5e59Ad72B1B0A2fd446929e76117be0E0a"; //address of VALOR token in mainnet
-    const beneficiary  = "0xBedC09625d4233631Bca1Ee670B24E0651CfBe17"; //address under SV control 
+    const beneficiary  = "0x4D38FF095F9c6DB907e836B5817A6081634DA45D"; //address under SV control 
     const admin = "0xF7C306cCb09E5cC2CCab10bCfc827ab0cF88FE36";//address of admin role, he can unlock with emergencyRelease
-    const lockPeriod = 7 * 86400; //this timelock is a test on mainnet, it must be 180days
+    const lockPeriod = 14194553; // duration since now, it must end the 27 Sept 2019
 
     //(this.token.address, beneficiary, admin, 365 * day);
 
