@@ -56,32 +56,32 @@ console.log("deployment ...")
 const Web3 = require('web3');
 
 const HDWalletProvider=require('truffle-hdwallet-provider');
-const INFURA_KEY="5d7200d2eedb4357b73f2cc14d7891fd";
-const mnemonic  = "merge useful win lava describe venture version smooth input more picture swap";
+const INFURA_KEY=process.env.INFURA_KEY;
+const mnemonic  = process.env.mnemonic;
 const provider = new HDWalletProvider(mnemonic, 'https://kovan.infura.io/v3/'+INFURA_KEY);
 const web3 = new Web3(provider);
 
 (async () => {
-  const accounts = await web3.eth.getAccounts();
+  const deployer = '0x25100E346bfB990CBc82B5EF658d32360285b582';
 
-  console.log(`Attempting to deploy from account: ${accounts[0]}`);
+  console.log(`Attempting to deploy from account: ${deployer}`);
 
-  const deployedContract = await new web3.eth.Contract(abi)
-    .deploy({
+  const contract = await new web3.eth.Contract(JSON.parse(abi));
+
+  let tx = await  contract.deploy({
       data: '0x' + bytecode,
       arguments: ['0xbcb3ec9da276a445bfa7586dc895304119858cd6', 
                   '0x25100E346bfB990CBc82B5EF658d32360285b582',
                   '0x25100E346bfB990CBc82B5EF658d32360285b582',
                   300]
-    })
-    .send({
-      from: accounts[0],
-      gas: '2000000'
     });
 
-  console.log(
-    `Contract deployed at address: ${deployedContract.options.address}`
-  );
+  await tx.send({
+      from: deployer,
+      gas: '2000000'
+  }).then(instance => {console.log("instance:"+instance.options.address)});
+
+
 
   provider.engine.stop();
 })();
